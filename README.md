@@ -143,13 +143,51 @@ Once the backend is running, visit:
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
-## Default Credentials
+## Demo Credentials
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@scheduleapp.com | admin123 |
-| Provider | provider@scheduleapp.com | provider123 |
-| Customer | customer@scheduleapp.com | customer123 |
+Run `backend/seed.py` to create the demo users below.
+
+### Admin
+
+| Email | Password |
+|-------|----------|
+| admin@appointly.com | admin123456 |
+
+### Customers
+
+All customer accounts use password `password123`.
+
+| Name | Email |
+|------|-------|
+| Priya Sharma | priya.sharma@email.com |
+| Amit Patel | amit.patel@email.com |
+| Sneha Reddy | sneha.reddy@email.com |
+| Vikram Singh | vikram.singh@email.com |
+| Ananya Iyer | ananya.iyer@email.com |
+| Rohan Gupta | rohan.gupta@email.com |
+| Kavita Nair | kavita.nair@email.com |
+| Arjun Mehta | arjun.mehta@email.com |
+| Deepika Joshi | deepika.joshi@email.com |
+| Sanjay Verma | sanjay.verma@email.com |
+
+### Providers
+
+All provider accounts use password `password123`.
+
+| Name | Email | Demo Profile |
+|------|-------|--------------|
+| Dr. Arun Kapoor | dr.arun.kapoor@email.com | General Medicine, Mumbai, INR 2500/hr |
+| Dr. Meera Shah | dr.meera.shah@email.com | Dermatology, Delhi, INR 3500/hr |
+| Neha Kapoor | neha.beauty@email.com | Hair Styling, Bangalore, INR 1500/hr |
+| Swami Raghav | swami.raghav@email.com | Yoga & Meditation, Hyderabad, INR 800/hr |
+| Prof. Suresh Iyer | prof.suresh.iyer@email.com | Maths Tutoring, Chennai, INR 1200/hr |
+| Manish Tiwari | manish.tiwari@email.com | UPSC Coaching, Pune, INR 2000/hr |
+| Adv. Sunita Desai | adv.sunita.desai@email.com | Property Law, Kolkata, INR 5000/hr |
+| Ritu Malhotra | ritu.malhotra@email.com | Interior Design, Ahmedabad, INR 3000/hr |
+
+The seed script also creates additional generated provider accounts using the pattern
+`<category>-<specialization>-<number>@providers.appointease.test`, all with password
+`password123`.
 
 ## License
 
