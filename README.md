@@ -112,6 +112,7 @@ appointment-scheduling-platform/
 
 ```bash
 docker-compose up --build
+docker exec appointment_backend python seed.py
 ```
 
 The application will be available at:
