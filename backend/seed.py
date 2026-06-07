@@ -131,6 +131,7 @@ async def seed_database():
             phone_number="+919876543210",
             role=UserRole.ADMIN,
             is_active=True,
+            is_super_admin=True,
         )
         db.add(admin_user)
         await db.flush()

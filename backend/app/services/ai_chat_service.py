@@ -142,6 +142,101 @@ class AIChatRetrievalService:
             )
         )
 
+    @staticmethod
+    def is_recent_appointments_intent(message: str) -> bool:
+        """Detect questions about recent appointments or recent bookings."""
+        q = message.lower()
+        return any(
+            phrase in q
+            for phrase in (
+                "recent appointment",
+                "recent appointments",
+                "recent booking",
+                "recent bookings",
+                "latest booking",
+                "latest bookings",
+                "upcoming appointment",
+                "upcoming appointments",
+                "my appointments",
+                "my booking",
+                "my bookings",
+                "next appointment",
+                "next appointments",
+                "who has done the recent appointments",
+                "who did the recent appointments",
+            )
+        )
+
+    @staticmethod
+    def is_stats_intent(message: str) -> bool:
+        """Detect generic stats or dashboard questions."""
+        q = message.lower()
+        return any(
+            phrase in q
+            for phrase in (
+                "how many booking",
+                "how many appointment",
+                "today's stats",
+                "today stats",
+                "today's appointments",
+                "today appointments",
+                "platform revenue",
+                "view reports",
+                "platform overview",
+                "recent bookings",
+                "recent platform appointments",
+                "what is the recent bookings",
+                "show reports",
+                "show revenue",
+            )
+        )
+
+    @staticmethod
+    def is_provider_scope_intent(message: str) -> bool:
+        """Detect questions that should stay inside provider access."""
+        q = message.lower()
+        return any(
+            phrase in q
+            for phrase in (
+                "my schedule",
+                "my upcoming appointments",
+                "my appointments",
+                "recent appointments",
+                "recent bookings",
+                "my ratings",
+                "my reviews",
+                "my revenue",
+                "my revenue summary",
+                "pending requests",
+                "appointment requests",
+                "pending appointment requests",
+                "today's schedule",
+                "today schedule",
+                "today appointments",
+                "today's appointments",
+            )
+        )
+
+    @staticmethod
+    def is_customer_scope_intent(message: str) -> bool:
+        """Detect customer personal booking/account questions."""
+        q = message.lower()
+        return any(
+            phrase in q
+            for phrase in (
+                "my upcoming appointments",
+                "my appointments",
+                "my booking",
+                "my bookings",
+                "my loyalty",
+                "my points",
+                "my invoice",
+                "my invoices",
+                "my wallet",
+                "my cancellation",
+            )
+        )
+
     async def build_bundle(self, message: str, user_role: str) -> dict:
         """Build retrieval context for the current message."""
         booking_intent = self.is_booking_intent(message)
@@ -159,6 +254,7 @@ class AIChatRetrievalService:
         )
 
         return {
+            "message": message,
             "booking_intent": booking_intent,
             "provider_detail_intent": provider_detail_intent,
             "system_explanation_intent": system_explanation_intent,
@@ -213,12 +309,13 @@ class AIChatRetrievalService:
         """Search project docs for the most relevant chunks."""
         query_tokens = _tokenize(message)
         raw_query = message.lower().strip()
+        expanded_tokens = self._expand_query_tokens(query_tokens, raw_query)
         scored: list[tuple[float, KnowledgeChunk]] = []
 
         for chunk in self._load_knowledge_chunks():
             text = chunk.combined.lower()
             chunk_tokens = _tokenize(text)
-            overlap = set(query_tokens) & set(chunk_tokens)
+            overlap = set(expanded_tokens) & set(chunk_tokens)
             score = float(sum(2.5 if len(token) > 6 else 1.5 for token in overlap))
 
             if raw_query and raw_query in text:
@@ -227,14 +324,28 @@ class AIChatRetrievalService:
             if any(token in chunk.title.lower() for token in query_tokens):
                 score += 2
 
+            if any(token in chunk.title.lower() for token in expanded_tokens):
+                score += 1.5
+
+            if self._chunk_matches_role(chunk, raw_query):
+                score += 1
+
             if score > 0:
                 scored.append((score, chunk))
 
         scored.sort(key=lambda item: item[0], reverse=True)
         return [chunk for _, chunk in scored[:limit]]
 
-    def build_direct_reply(self, message: str, bundle: dict, user_role: str) -> str | None:
+    def build_direct_reply(
+        self,
+        message: str,
+        bundle: dict,
+        user_role: str,
+        user_context: str = "",
+    ) -> str | None:
         """Answer some queries directly from retrieved context for accuracy."""
+        q = message.lower()
+
         if bundle["system_explanation_intent"]:
             return (
                 "I first retrieve live AppointEase data and project knowledge, then I may send that "
@@ -245,6 +356,30 @@ class AIChatRetrievalService:
 
         if bundle["provider_detail_intent"] and bundle["provider_matches"]:
             return self._build_provider_reply(bundle["provider_matches"], user_role)
+
+        if self.is_provider_scope_intent(message) and user_role == UserRole.PROVIDER.value:
+            section = self._extract_section(user_context, ("Recent Provider Appointments:", "Provider Stats:"))
+            if section:
+                return section
+
+        if self.is_customer_scope_intent(message) and user_role == UserRole.CUSTOMER.value:
+            section = self._extract_section(user_context, ("Recent Customer Appointments:", "Customer Stats:"))
+            if section:
+                return section
+
+        if self.is_recent_appointments_intent(message):
+            if user_role == UserRole.ADMIN.value:
+                section = self._extract_section(user_context, ("Recent Platform Appointments:", "Platform Stats:"))
+                if section:
+                    return section
+            elif user_role == UserRole.PROVIDER.value:
+                section = self._extract_section(user_context, ("Recent Provider Appointments:", "Provider Stats:"))
+                if section:
+                    return section
+            else:
+                section = self._extract_section(user_context, ("Recent Customer Appointments:", "Customer Stats:"))
+                if section:
+                    return section
 
         if bundle["booking_intent"] and bundle["provider_matches"] and user_role == UserRole.CUSTOMER.value:
             names = ", ".join(
@@ -257,22 +392,30 @@ class AIChatRetrievalService:
                 "Choose one of the options below and I’ll continue with the booking flow."
             )
 
+        if self.is_stats_intent(message):
+            stats_lines = self._extract_section(
+                user_context=user_context,
+                heading_markers=(
+                    "Customer Stats:",
+                    "Provider Stats:",
+                    "Platform Stats:",
+                ),
+            )
+            if stats_lines:
+                return stats_lines
+
         return None
 
     def build_fallback_reply(self, bundle: dict, user_context: str, user_role: str) -> str:
         """Return a retrieval-only fallback when no LLM reply is available."""
-        direct = self.build_direct_reply("", bundle, user_role)
+        direct = self.build_direct_reply(bundle.get("message", ""), bundle, user_role, user_context)
         if direct:
             return direct
 
-        relevant_lines = [
-            line.strip()
-            for line in user_context.splitlines()
-            if line.strip() and not line.startswith("User:")
-        ]
+        relevant_lines = self._pick_best_context_lines(bundle.get("message", ""), user_context)
         if relevant_lines:
             return (
-                f"Here is the most relevant live context I found: {relevant_lines[0]}. "
+                f"Here is the most relevant live context I found: {relevant_lines}. "
                 "I can also help with provider details, booking, or platform navigation."
             )
 
@@ -282,6 +425,90 @@ class AIChatRetrievalService:
             return f"{top_chunk.title}: {excerpt}"
 
         return "I couldn't find enough context for that yet. Try asking about a provider, booking, or your account data."
+
+    def _pick_best_context_lines(self, message: str, user_context: str) -> str | None:
+        """Select the most relevant section from the live user context."""
+        lines = [line.strip() for line in user_context.splitlines() if line.strip()]
+        q = message.lower()
+
+        section_keywords = [
+            ("Recent Provider Appointments:", (
+                "recent appointment",
+                "recent booking",
+                "recent bookings",
+                "upcoming appointment",
+                "upcoming appointments",
+                "my appointments",
+                "my schedule",
+                "pending requests",
+                "appointment requests",
+                "today schedule",
+                "today's schedule",
+                "today appointments",
+                "today's appointments",
+                "ratings",
+                "reviews",
+            )),
+            ("Recent Customer Appointments:", (
+                "recent appointment",
+                "recent booking",
+                "recent bookings",
+                "upcoming appointment",
+                "upcoming appointments",
+                "my appointments",
+                "my bookings",
+            )),
+            ("Recent Platform Appointments:", (
+                "recent appointment",
+                "recent booking",
+                "recent bookings",
+                "today",
+                "reports",
+            )),
+            ("Provider Stats:", ("provider stats", "provider profile", "schedule", "rating", "revenue")),
+            ("Customer Stats:", ("customer stats", "customer profile", "booking", "invoice", "loyalty", "points")),
+            ("Platform Stats:", ("platform overview", "today", "stats", "report", "revenue", "booking")),
+        ]
+
+        for marker, keywords in section_keywords:
+            if any(keyword in q for keyword in keywords):
+                extracted = self._extract_section(user_context, (marker,))
+                if extracted:
+                    return extracted
+
+        if user_context:
+            if "provider" in q:
+                extracted = self._extract_section(user_context, ("Recent Provider Appointments:", "Provider Stats:"))
+                if extracted:
+                    return extracted
+            if "customer" in q:
+                extracted = self._extract_section(user_context, ("Recent Customer Appointments:", "Customer Stats:"))
+                if extracted:
+                    return extracted
+            if any(word in q for word in ("report", "revenue", "overview", "stats")):
+                extracted = self._extract_section(user_context, ("Recent Platform Appointments:", "Platform Stats:"))
+                if extracted:
+                    return extracted
+
+        for line in lines:
+            if not line.startswith("User:"):
+                return line
+        return None
+
+    def _extract_section(self, user_context: str, heading_markers: tuple[str, ...]) -> str | None:
+        """Extract a section of the live context by heading."""
+        lines = user_context.splitlines()
+        for index, line in enumerate(lines):
+            if any(line.startswith(marker) for marker in heading_markers):
+                collected = [line]
+                for next_line in lines[index + 1 :]:
+                    if not next_line.strip():
+                        break
+                    if next_line.startswith("User:") or next_line.endswith(":"):
+                        break
+                    collected.append(next_line)
+                return "\n".join(collected).strip()
+        return None
 
     def format_provider_context(self, matches: list[RetrievedProvider]) -> str:
         """Format retrieved provider records for the LLM prompt."""
@@ -441,7 +668,7 @@ class AIChatRetrievalService:
         provider: ServiceProvider,
     ) -> tuple[float, set[str]]:
         """Score a provider against the current query."""
-        query_tokens = _tokenize(message)
+        query_tokens = self._expand_query_tokens(_tokenize(message), message.lower())
         if not query_tokens:
             return 0.0, set()
 
@@ -490,6 +717,50 @@ class AIChatRetrievalService:
             reasons.add("exact category")
 
         return score, reasons
+
+    @staticmethod
+    def _expand_query_tokens(tokens: list[str], raw_query: str) -> list[str]:
+        """Expand shorthand and common synonyms so retrieval is less brittle."""
+        expansions = {
+            "doc": ["doctor", "medical"],
+            "dr": ["doctor"],
+            "med": ["medical", "health"],
+            "healthcare": ["doctor", "clinic", "medical"],
+            "dental": ["dentist", "teeth"],
+            "beauty": ["salon", "wellness"],
+            "fitness": ["gym", "training"],
+            "legal": ["lawyer", "consultation"],
+            "provider": ["specialist", "doctor", "expert"],
+            "appointment": ["booking", "schedule"],
+            "schedule": ["booking", "availability"],
+            "revenue": ["income", "earnings", "payment", "invoice"],
+            "ratings": ["rating", "review", "feedback", "stars"],
+            "overview": ["summary", "dashboard", "stats"],
+        }
+        expanded = list(tokens)
+        raw_words = set(re.findall(r"[a-zA-Z0-9]+", raw_query.lower()))
+        for token in tokens:
+            expanded.extend(expansions.get(token, []))
+        for word in raw_words:
+            expanded.extend(expansions.get(word, []))
+        return expanded
+
+    @staticmethod
+    def _chunk_matches_role(chunk: KnowledgeChunk, raw_query: str) -> bool:
+        """Prefer chunks that clearly match the user's workflow intent."""
+        role_hints = {
+            "provider": ("provider", "availability", "ratings", "revenue", "appointment"),
+            "admin": ("admin", "platform", "reports", "approvals", "users", "categories"),
+            "customer": ("customer", "booking", "wallet", "loyalty", "favorites"),
+        }
+        lower = f"{chunk.title}\n{chunk.body}".lower()
+        if any(hint in raw_query for hint in role_hints["provider"]) and "provider" in lower:
+            return True
+        if any(hint in raw_query for hint in role_hints["admin"]) and "platform" in lower:
+            return True
+        if any(hint in raw_query for hint in role_hints["customer"]) and ("customer" in lower or "booking" in lower):
+            return True
+        return False
 
 
 def _tokenize(text: str) -> list[str]:

@@ -19,6 +19,7 @@ from app.models.invoice import Invoice
 from app.models.coupon import Coupon, DiscountType
 from app.models.coupon_usage import CouponUsage
 from app.models.achievement import Achievement, AchievementCategory, RequirementType, UserAchievement
+from app.models.provider_document import ProviderDocument, ProviderDocumentChunk
 
 __all__ = [
     "User",
@@ -49,4 +50,6 @@ __all__ = [
     "AchievementCategory",
     "RequirementType",
     "UserAchievement",
+    "ProviderDocument",
+    "ProviderDocumentChunk",
 ]

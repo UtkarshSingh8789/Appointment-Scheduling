@@ -49,6 +49,7 @@ export const ProviderOnboarding: React.FC = () => {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>('');
   const [supportFiles, setSupportFiles] = useState<File[]>([]);
+  const [submitError, setSubmitError] = useState<string>('');
 
   const [data, setData] = useState<OnboardingData>({
     specialization: '',
@@ -106,24 +107,31 @@ export const ProviderOnboarding: React.FC = () => {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setSubmitError('');
     try {
-      const formData = new FormData();
-      formData.append('specialization', data.specialization);
-      formData.append('category_id', data.category_id);
-      formData.append('experience_years', String(data.experience_years));
-      formData.append('location', data.location);
-      formData.append('area', data.area);
-      formData.append('pincode', data.pincode);
-      formData.append('profile_description', data.profile_description);
-      formData.append('hourly_rate', String(data.hourly_rate));
-
-      if (avatarFile) {
-        formData.append('avatar_file', avatarFile);
+      if (!data.category_id) {
+        toast.error('Please select a service category.');
+        setIsSubmitting(false);
+        return;
       }
       if (supportFiles.length === 0) {
         toast.error('Please upload at least one certificate, license, or supporting document.');
         setIsSubmitting(false);
         return;
+      }
+
+      const formData = new FormData();
+      formData.append('specialization', data.specialization);
+      formData.append('category_id', data.category_id);
+      formData.append('experience_years', String(data.experience_years));
+      formData.append('location', data.location);
+      if (data.area.trim()) formData.append('area', data.area.trim());
+      if (data.pincode.trim()) formData.append('pincode', data.pincode.trim());
+      if (data.profile_description.trim()) formData.append('profile_description', data.profile_description.trim());
+      formData.append('hourly_rate', String(data.hourly_rate));
+
+      if (avatarFile) {
+        formData.append('avatar_file', avatarFile);
       }
       supportFiles.forEach((file) => {
         formData.append('documents', file);
@@ -133,8 +141,36 @@ export const ProviderOnboarding: React.FC = () => {
       setIsComplete(true);
       toast.success('Your provider application has been submitted!');
       setTimeout(() => navigate('/provider/pending'), 1800);
-    } catch {
-      toast.error('Failed to submit your application. Please try again.');
+    } catch (error: unknown) {
+      const err = error as {
+        response?: {
+          data?: {
+            detail?: string | string[] | Array<{ msg?: string; loc?: (string | number)[]; type?: string; input?: unknown }>;
+          };
+        };
+      };
+      const detail = err.response?.data?.detail;
+      if (Array.isArray(detail)) {
+        const first = detail[0];
+        if (typeof first === 'string') {
+          setSubmitError(first);
+          toast.error(first);
+        } else if (first && typeof first === 'object') {
+          const field = Array.isArray(first.loc) ? first.loc.join('.') : 'unknown field';
+          const message = `${field}: ${first.msg || 'validation error'}`;
+          setSubmitError(message);
+          toast.error(message);
+        } else {
+          setSubmitError('Failed to submit your application. Please try again.');
+          toast.error('Failed to submit your application. Please try again.');
+        }
+      } else if (typeof detail === 'string') {
+        setSubmitError(detail);
+        toast.error(detail);
+      } else {
+        setSubmitError('Failed to submit your application. Please try again.');
+        toast.error('Failed to submit your application. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -241,6 +277,11 @@ export const ProviderOnboarding: React.FC = () => {
           transition={{ duration: 0.2 }}
         >
           <Card className="dark:bg-gray-800 dark:border-gray-700">
+            {submitError && (
+              <div className="mb-4 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-3 py-2 text-sm text-red-700 dark:text-red-300">
+                {submitError}
+              </div>
+            )}
             {currentStep === 0 && (
               <div className="space-y-5">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">

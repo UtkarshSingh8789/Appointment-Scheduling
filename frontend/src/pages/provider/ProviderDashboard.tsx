@@ -11,6 +11,7 @@ import { Modal } from '@/components/ui/Modal';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { PageTransition } from '@/components/layout/PageTransition';
+import { McpInsightsPanel } from '@/components/mcp/McpInsightsPanel';
 import { formatDate, formatTime, getRelativeDateLabel } from '@/utils';
 import type { ProviderStats, Appointment } from '@/types';
 
@@ -83,6 +84,8 @@ export const ProviderDashboard: React.FC = () => {
           />
         </div>
       )}
+
+      <McpInsightsPanel />
 
       {/* Today's appointments */}
       <Card>

@@ -45,9 +45,7 @@ export const providerService = {
 
   /** Register as a provider with files */
   async registerApplication(formData: FormData): Promise<Provider> {
-    const response = await api.post<Provider>('/providers/register-application', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const response = await api.post<Provider>('/providers/register-application', formData);
     return response.data;
   },
 

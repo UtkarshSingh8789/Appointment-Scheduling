@@ -13,6 +13,7 @@ export interface User {
   role: UserRole;
   avatar_url: string | null;
   is_active: boolean;
+  is_super_admin?: boolean;
   provider_id?: string | null;
   provider_is_verified?: boolean | null;
   provider_status?: 'active' | 'pending' | 'deactive' | null;

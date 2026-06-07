@@ -16,6 +16,19 @@ export interface AdminUserDetail {
   provider?: Provider | null;
 }
 
+export interface ProviderDocumentAIResponse {
+  answer: string;
+  citations: Array<{
+    document: string;
+    path: string;
+    chunk_index: number;
+    excerpt: string;
+    similarity: number;
+  }>;
+  confidence: 'low' | 'medium' | 'high';
+  risk_flags: string[];
+}
+
 /** Admin service for platform management */
 export const adminService = {
   /** Get all users with optional filters */
@@ -113,6 +126,28 @@ export const adminService = {
     const response = await api.post<Provider>(
       `/admin/providers/${providerId}/approval`,
       data
+    );
+    return response.data;
+  },
+
+  /** Rebuild document RAG index for a provider application */
+  async reindexProviderDocuments(providerId: string): Promise<{
+    indexed_documents: number;
+    indexed_chunks: number;
+    skipped_documents: Array<{ name: string; reason: string }>;
+  }> {
+    const response = await api.post(`/admin/providers/${providerId}/document-ai/reindex`);
+    return response.data;
+  },
+
+  /** Ask a free-form super-admin question about provider onboarding documents */
+  async askProviderDocuments(
+    providerId: string,
+    question: string
+  ): Promise<ProviderDocumentAIResponse> {
+    const response = await api.post<ProviderDocumentAIResponse>(
+      `/admin/providers/${providerId}/document-ai/ask`,
+      { question }
     );
     return response.data;
   },

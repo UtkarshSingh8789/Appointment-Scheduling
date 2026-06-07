@@ -23,6 +23,7 @@ from app.routers import (
     favorites,
     invoices,
     loyalty,
+    mcp_tools,
     notifications,
     payments,
     providers,
@@ -80,6 +81,7 @@ app.include_router(favorites.router)
 app.include_router(admin.router)
 app.include_router(waitlist.router)
 app.include_router(loyalty.router)
+app.include_router(mcp_tools.router)
 app.include_router(invoices.router)
 app.include_router(chat.router)
 app.include_router(coupons.router)

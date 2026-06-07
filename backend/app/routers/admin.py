@@ -4,14 +4,14 @@ from datetime import date
 from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.core.database import get_db
-from app.core.dependencies import get_admin_user
+from app.core.dependencies import get_admin_user, get_super_admin_user
 from app.models.appointment import Appointment, AppointmentStatus
 from app.models.notification import NotificationType
 from app.models.provider import ServiceProvider
@@ -32,6 +32,7 @@ from app.schemas.user import UserListResponse, UserResponse
 from app.services.admin_service import AdminService
 from app.services.audit_service import AuditService
 from app.services.notification_service import NotificationService
+from app.services.provider_document_rag_service import ProviderDocumentRAGService
 from app.services.user_service import UserService
 
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
@@ -63,6 +64,12 @@ class ProviderApprovalRequest(BaseModel):
 
     action: str  # approve | reject
     reason: Optional[str] = None
+
+
+class ProviderDocumentAIQuestion(BaseModel):
+    """Open-ended document AI question."""
+
+    question: str
 
 
 @router.get(
@@ -220,6 +227,43 @@ async def update_provider_approval(
         reason=data.reason,
     )
     return provider
+
+
+@router.post(
+    "/providers/{provider_id}/document-ai/reindex",
+    summary="Reindex provider onboarding documents for RAG",
+)
+async def reindex_provider_documents(
+    provider_id: UUID,
+    admin: User = Depends(get_super_admin_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Extract, chunk, embed, and index one provider's onboarding documents. Super admin only."""
+    service = ProviderDocumentRAGService(db)
+    try:
+        return await service.reindex_provider(provider_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc))
+
+
+@router.post(
+    "/providers/{provider_id}/document-ai/ask",
+    summary="Ask AI about a provider's onboarding documents",
+)
+async def ask_provider_documents(
+    provider_id: UUID,
+    data: ProviderDocumentAIQuestion,
+    admin: User = Depends(get_super_admin_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Ask any document-grounded question about one provider application. Super admin only."""
+    service = ProviderDocumentRAGService(db)
+    try:
+        return await service.ask(provider_id, data.question)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
 
 @router.get(

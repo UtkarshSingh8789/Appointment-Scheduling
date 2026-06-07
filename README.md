@@ -119,6 +119,7 @@ The application will be available at:
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000
 - API Docs: http://localhost:8000/docs
+- MCP Server: http://localhost:8001/mcp
 
 ### Local Development
 
@@ -143,6 +144,118 @@ npm run dev
 Once the backend is running, visit:
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
+
+## MCP Server
+
+The project includes a read-only Model Context Protocol server for AI clients.
+It exposes safe tools that can inspect real AppointEase data without directly
+creating, updating, or cancelling appointments.
+
+### Run With Docker
+
+```bash
+docker-compose up --build mcp
+```
+
+The MCP endpoint will be available at:
+
+```text
+http://localhost:8001/mcp
+```
+
+### Run Locally
+
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+export DATABASE_URL="postgresql+asyncpg://postgres:<password>@localhost:5432/appointment_db"
+python -m app.mcp_server
+```
+
+### Check It
+
+The easiest way to inspect the server is the official MCP Inspector:
+
+```bash
+npx -y @modelcontextprotocol/inspector
+```
+
+In the Inspector UI, connect to:
+
+```text
+http://localhost:8001/mcp
+```
+
+Available tools include:
+
+- `health_check`
+- `list_categories`
+- `search_providers`
+- `get_provider_details`
+- `get_provider_availability`
+- `get_customer_summary`
+- `get_recent_appointments`
+- `get_platform_overview`
+- `search_project_knowledge`
+
+### Check It In The Live App
+
+After logging in, open the floating **AppointEase AI** chat widget. The header
+shows whether the MCP bridge is connected. Ask:
+
+```text
+MCP status
+```
+
+For customers, provider search and slot lookup inside the chat booking flow now
+use the MCP bridge:
+
+```text
+Book a doctor in Delhi
+```
+
+The live app flow is:
+
+```text
+React chatbot -> FastAPI /api/mcp-tools -> MCP tool functions -> PostgreSQL
+```
+
+## Super Admin Document RAG
+
+Provider onboarding documents can be reviewed with an admin-only RAG assistant.
+This is separate from the normal chatbot and appears only for users with
+`is_super_admin=true`.
+
+Flow:
+
+```text
+Provider uploads documents
+-> Super admin opens /admin/approvals
+-> Expand a pending provider
+-> Index docs or ask a question
+-> Backend extracts text, chunks it, creates embeddings, searches relevant chunks
+-> AI answers with citations and risk flags
+```
+
+The demo admin is marked as super admin:
+
+```text
+admin@appointly.com / admin123456
+```
+
+The RAG endpoints are:
+
+```text
+POST /api/admin/providers/{provider_id}/document-ai/reindex
+POST /api/admin/providers/{provider_id}/document-ai/ask
+```
+
+The implementation stores embeddings in PostgreSQL as JSON by default so local
+development works with the current `postgres:15-alpine` image. It is pgvector
+ready: switch to a Postgres image with the `vector` extension and set
+`ENABLE_PGVECTOR=true` for a real vector column path.
 
 ## Demo Credentials
 

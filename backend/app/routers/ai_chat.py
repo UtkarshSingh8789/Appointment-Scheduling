@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from app.core.config import settings
 from app.core.database import get_db
@@ -26,6 +27,46 @@ from app.services.ai_chat_service import AIChatRetrievalService
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/ai-chat", tags=["AI Chat"])
+
+# Intent labels per role used for LLM classification
+PROVIDER_INTENTS = ["pending", "upcoming", "revenue", "ratings", "appointments", "dashboard"]
+ADMIN_INTENTS = ["topProviders", "revenue", "approvals", "categories", "users", "appointments", "ratings", "providers", "overview", "userDetail", "userSearch"]
+
+PROVIDER_INTENT_DESCRIPTIONS = {
+    "pending": "pending/new appointment requests waiting for acceptance",
+    "upcoming": "upcoming schedule, today's appointments, future bookings",
+    "revenue": "earnings, income, money, invoices, payments received",
+    "ratings": "ratings, reviews, stars, feedback from customers",
+    "appointments": "total appointment counts, breakdown by status (completed/cancelled/confirmed)",
+    "dashboard": "general overview, summary, stats, dashboard",
+}
+
+ADMIN_INTENT_DESCRIPTIONS = {
+    "topProviders": "top/best providers by revenue or rating, leaderboard",
+    "revenue": "platform revenue, earnings, financial stats, invoices",
+    "approvals": "pending provider approvals, unapproved providers waiting",
+    "categories": "service categories breakdown, popular categories",
+    "users": "user counts, customer stats, how many users",
+    "appointments": "appointment counts, booking stats, recent appointments",
+    "ratings": "platform ratings, reviews, average scores",
+    "providers": "provider counts, verified providers stats",
+    "overview": "full platform overview, dashboard summary, general status",
+    "userDetail": "get full details about a specific named user, customer, or provider (e.g. 'show me Dr. Arun', 'details of priya sharma', 'tell me about john@email.com')",
+    "userSearch": "search/find users or providers by partial name or email fragment",
+}
+
+
+class IntentRequest(BaseModel):
+    """Request body for intent classification."""
+    message: str
+    role: str  # provider | admin
+
+
+class IntentResponse(BaseModel):
+    """Response body for intent classification."""
+    intent: str | None
+    confidence: str  # high | low
+    source: str  # llm | fallback
 
 
 class AIChatAction(BaseModel):
@@ -108,12 +149,31 @@ async def _get_user_context(db: AsyncSession, user: User) -> str:
         )
         invoice_count = invoice_result.scalar() or 0
 
+        appointments_result = await db.execute(
+            select(Appointment)
+            .options(joinedload(Appointment.provider).joinedload(ServiceProvider.user))
+            .where(Appointment.customer_id == user.id)
+            .order_by(Appointment.appointment_date.desc(), Appointment.start_time.desc())
+            .limit(5)
+        )
+        recent_appointments = appointments_result.unique().scalars().all()
+
         context_parts.append(
             f"Customer Stats: {total_appointments} total appointments, "
             f"{upcoming} upcoming confirmed, {pending} pending, {completed} completed, "
             f"{cancelled} cancelled. Loyalty: {points} points, {tier} tier. "
             f"Invoices: {invoice_count} total."
         )
+        if recent_appointments:
+            recent_lines = []
+            for appointment in recent_appointments:
+                provider = appointment.provider
+                recent_lines.append(
+                    f"{appointment.appointment_date.isoformat()} {appointment.start_time.isoformat(timespec='minutes')} with "
+                    f"{provider.user.full_name if provider and provider.user else 'Unknown Provider'} "
+                    f"({provider.specialization if provider else 'Unknown'}) status {appointment.status.value}"
+                )
+            context_parts.append("Recent Customer Appointments:\n- " + "\n- ".join(recent_lines))
 
     elif user.role == UserRole.PROVIDER:
         provider_result = await db.execute(
@@ -166,12 +226,30 @@ async def _get_user_context(db: AsyncSession, user: User) -> str:
             )
             revenue = revenue_result.scalar() or 0
 
+            appointments_result = await db.execute(
+                select(Appointment)
+                .options(joinedload(Appointment.customer))
+                .where(Appointment.provider_id == provider.id)
+                .order_by(Appointment.appointment_date.desc(), Appointment.start_time.desc())
+                .limit(5)
+            )
+            recent_appointments = appointments_result.unique().scalars().all()
+
             context_parts.append(
                 f"Provider Profile: {provider.specialization} in {provider.location}. "
                 f"Provider Stats: {total} total appointments, {pending} pending, {confirmed} confirmed, "
                 f"{completed} completed, average rating {avg_rating:.1f}/5 from {review_count} reviews, "
                 f"total revenue ₹{revenue:.0f}."
             )
+            if recent_appointments:
+                recent_lines = []
+                for appointment in recent_appointments:
+                    customer = appointment.customer
+                    recent_lines.append(
+                        f"{appointment.appointment_date.isoformat()} {appointment.start_time.isoformat(timespec='minutes')} with "
+                        f"{customer.full_name if customer else 'Unknown Customer'} status {appointment.status.value}"
+                    )
+                context_parts.append("Recent Provider Appointments:\n- " + "\n- ".join(recent_lines))
 
     elif user.role == UserRole.ADMIN:
         result = await db.execute(select(func.count(User.id)))
@@ -199,12 +277,35 @@ async def _get_user_context(db: AsyncSession, user: User) -> str:
         avg_result = await db.execute(select(func.avg(Review.rating)))
         avg_rating = avg_result.scalar() or 0
 
+        appointments_result = await db.execute(
+            select(Appointment)
+            .options(
+                joinedload(Appointment.customer),
+                joinedload(Appointment.provider).joinedload(ServiceProvider.user),
+            )
+            .order_by(Appointment.appointment_date.desc(), Appointment.start_time.desc())
+            .limit(5)
+        )
+        recent_appointments = appointments_result.unique().scalars().all()
+
         context_parts.append(
             f"Platform Stats: {total_users} users ({total_customers} customers), "
             f"{active_providers} active providers, {total_appointments} total appointments, "
             f"{total_categories} categories, total revenue ₹{total_revenue:.0f}, "
             f"average rating {avg_rating:.1f}/5."
         )
+        if recent_appointments:
+            recent_lines = []
+            for appointment in recent_appointments:
+                provider = appointment.provider
+                customer = appointment.customer
+                recent_lines.append(
+                    f"{appointment.appointment_date.isoformat()} {appointment.start_time.isoformat(timespec='minutes')} "
+                    f"customer {customer.full_name if customer else 'Unknown'} "
+                    f"provider {provider.user.full_name if provider and provider.user else 'Unknown'} "
+                    f"status {appointment.status.value}"
+                )
+            context_parts.append("Recent Platform Appointments:\n- " + "\n- ".join(recent_lines))
 
     cat_result = await db.execute(
         select(ServiceCategory.name).where(ServiceCategory.is_active.is_(True)).limit(20)
@@ -423,6 +524,102 @@ async def _generate_llm_reply(
         return result["choices"][0]["message"]["content"].strip()
 
     raise HTTPException(status_code=503, detail="AI service not configured")
+
+
+async def _classify_intent_llm(message: str, role: str) -> str | None:
+    """Use Gemini/Grok to classify user message into a known intent."""
+    if role == "provider":
+        intents = PROVIDER_INTENTS
+        descriptions = PROVIDER_INTENT_DESCRIPTIONS
+    else:
+        intents = ADMIN_INTENTS
+        descriptions = ADMIN_INTENT_DESCRIPTIONS
+
+    intent_list = "\n".join(f'- "{k}": {v}' for k, v in descriptions.items())
+    prompt = (
+        f"You are classifying a {role}'s message in an appointment scheduling app.\n"
+        f"The user may write in English, Hindi, Hinglish, or with spelling mistakes.\n"
+        f"Return ONLY the single intent label that best matches, or \"none\" if nothing fits.\n\n"
+        f"Available intents:\n{intent_list}\n\n"
+        f"User message: \"{message}\"\n\n"
+        f"Reply with just the intent label, nothing else. Valid values: {', '.join(intents)}, none"
+    )
+
+    try:
+        if settings.GEMINI_API_KEY:
+            api_url = (
+                "https://generativelanguage.googleapis.com/v1beta/models/"
+                f"gemini-2.5-flash:generateContent?key={settings.GEMINI_API_KEY}"
+            )
+            payload = {
+                "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+                "generationConfig": {"temperature": 0.0, "maxOutputTokens": 20},
+            }
+            async with httpx.AsyncClient(timeout=8.0) as client:
+                response = await client.post(api_url, headers={"Content-Type": "application/json"}, json=payload)
+            if response.status_code == 200:
+                text = response.json()["candidates"][0]["content"]["parts"][0]["text"].strip().strip('"').lower()
+                return text if text in intents else None
+
+        if settings.GROK_API_KEY:
+            async with httpx.AsyncClient(timeout=8.0) as client:
+                response = await client.post(
+                    "https://api.x.ai/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {settings.GROK_API_KEY}", "Content-Type": "application/json"},
+                    json={"model": settings.GROK_MODEL, "messages": [{"role": "user", "content": prompt}], "temperature": 0.0, "max_tokens": 20},
+                )
+            if response.status_code == 200:
+                text = response.json()["choices"][0]["message"]["content"].strip().strip('"').lower()
+                return text if text in intents else None
+    except Exception:
+        pass
+    return None
+
+
+@router.post("/intent", response_model=IntentResponse)
+async def classify_intent(
+    data: IntentRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """Classify a provider or admin message into a known intent using LLM + regex fallback."""
+    role = data.role.lower()
+    if role not in ("provider", "admin"):
+        return IntentResponse(intent=None, confidence="low", source="fallback")
+
+    # Try LLM first
+    llm_intent = await _classify_intent_llm(data.message, role)
+    if llm_intent:
+        return IntentResponse(intent=llm_intent, confidence="high", source="llm")
+
+    # Regex fallback
+    import re
+    if role == "provider":
+        patterns: list[tuple[str, re.Pattern[str]]] = [
+            ("pending",      re.compile(r"(pending|request|awaiting|waiting|naya req|nayi req|accept|reject)", re.I)),
+            ("revenue",      re.compile(r"(revenue|earning|income|paise|paisa|kamai|kitna mila|paise aaye|kitna kamaya|rupee|rupay|payment|invoice|how much.*earn|how much.*made)", re.I)),
+            ("ratings",      re.compile(r"(rating|review|feedback|star|score|reputation|meri rating|log kya bol|kitne star|average rat)", re.I)),
+            ("upcoming",     re.compile(r"(upcoming|schedul|aaj|kal|today|tomorrow|next appoint|mera schedule|mere appoint|aane wale|view schedule|mera sched)", re.I)),
+            ("appointments", re.compile(r"(appoint|booking|completed|cancelled|confirmed|how many|kitne|breakdown|total appoint|saare appoint)", re.I)),
+            ("dashboard",    re.compile(r"(dashboard|overview|summary|stats|statistics|sab kuch|meri performance|batao)", re.I)),
+        ]
+    else:
+        patterns = [
+            ("topProviders", re.compile(r"(top provider|best provider|highest rated|most revenue|leaderboard|sabse acha|sabse zyada|number one provider)", re.I)),
+            ("revenue",      re.compile(r"(revenue|earning|income|paise|paisa|kamai|kitna kamaya|financial|total revenue|platform.*earn|rupee|rupay|invoic|view report|report)", re.I)),
+            ("approvals",    re.compile(r"(approval|approve|pending provider|unapproved|waiting provider|verify|verification|naye provider)", re.I)),
+            ("categories",   re.compile(r"(categor|service type|which service|popular service|konsi service|kaunsi)", re.I)),
+            ("users",        re.compile(r"(how many user|kitne user|kitne log|total user|new user|registered|user.?s|user count|customer count|users\b|usrs|usr )", re.I)),
+            ("appointments", re.compile(r"(appoint|booking|how many booking|recent appoint|kitne appoint|total booking|saari booking|appoin)", re.I)),
+            ("ratings",      re.compile(r"(rating|review|feedback|star|platform rating|average rating|kitne star|log kya bol)", re.I)),
+            ("providers",    re.compile(r"(how many provider|total provider|verified provider|kitne provider|provider count|provider stat)", re.I)),
+            ("overview",     re.compile(r"(overview|overvie|overvew|overv|summary|dashboard|platform overview|platform status|sab kuch|overall|haal batao|sab batao)", re.I)),
+        ]
+
+    for intent_name, pattern in patterns:
+        if pattern.search(data.message):
+            return IntentResponse(intent=intent_name, confidence="low", source="fallback")
+
+    return IntentResponse(intent=None, confidence="low", source="fallback")
 
 
 @router.post("", response_model=AIChatResponse)

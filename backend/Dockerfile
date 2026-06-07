@@ -8,6 +8,7 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    tesseract-ocr \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
@@ -27,8 +28,8 @@ COPY . .
 
 # Create non-root user
 RUN adduser --disabled-password --gecos "" appuser && \
+    mkdir -p /app/data /app/uploads && \
     chown -R appuser:appuser /app
-USER appuser
 
 # Expose port
 EXPOSE 8000

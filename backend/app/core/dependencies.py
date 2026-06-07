@@ -87,6 +87,18 @@ async def get_admin_user(
     return current_user
 
 
+async def get_super_admin_user(
+    current_user: User = Depends(get_admin_user),
+) -> User:
+    """Ensure the current user is a super admin."""
+    if not current_user.is_super_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Super admin access required",
+        )
+    return current_user
+
+
 async def get_provider_user(
     current_user: User = Depends(get_current_user),
 ) -> User:

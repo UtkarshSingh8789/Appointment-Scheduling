@@ -68,12 +68,16 @@ export const BookAppointment: React.FC = () => {
     const params = new URLSearchParams(location.search);
     const prefilledDate = params.get('date');
     const prefilledSlot = params.get('time');
+    const prefilledStep = params.get('step');
     prefilledSlotRef.current = prefilledSlot;
     if (prefilledDate) {
       setSelectedDate(prefilledDate);
     }
     if (prefilledSlot) {
       setSelectedSlot(prefilledSlot);
+    }
+    if (prefilledDate && prefilledSlot && prefilledStep === 'confirm') {
+      setCurrentStep(3);
     }
   }, [location.search]);
 

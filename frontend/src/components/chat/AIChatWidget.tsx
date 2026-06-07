@@ -59,6 +59,7 @@ type BookingStep =
 interface BookingState {
   step: BookingStep;
   service?: string;
+  location?: string;
   providerId?: string;
   providerName?: string;
   date?: string;
@@ -76,6 +77,18 @@ interface ChatThread {
   suggestions: string[];
 }
 
+interface McpStatus {
+  connected: boolean;
+  bridge: string;
+  tool_count: number;
+  tools: string[];
+  health?: {
+    status?: string;
+    database?: string;
+    user_count?: number;
+  };
+}
+
 const ROLE_SUGGESTIONS: Record<UserRole, string[]> = {
   customer: [
     'Book an appointment',
@@ -85,16 +98,20 @@ const ROLE_SUGGESTIONS: Record<UserRole, string[]> = {
     'Find a doctor near me',
   ],
   provider: [
-    'How many pending requests?',
-    'How to manage my availability?',
-    'What is my average rating?',
-    'Show my schedule today',
+    'Show my dashboard',
+    'Pending requests',
+    'My upcoming schedule',
+    'My revenue summary',
+    'My ratings & reviews',
+    'Total appointments breakdown',
   ],
   admin: [
-    'Show platform overview',
-    'How many new users this week?',
-    'What is the cancellation rate?',
-    'Show revenue stats',
+    'Platform overview',
+    'Pending provider approvals',
+    'Platform revenue',
+    'Top providers',
+    'How many users?',
+    'Category breakdown',
   ],
 };
 
@@ -111,6 +128,8 @@ export const AIChatWidget: React.FC = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [threads, setThreads] = useState<ChatThread[]>([]);
   const [activeThreadId, setActiveThreadId] = useState('');
+  const [mcpStatus, setMcpStatus] = useState<McpStatus | null>(null);
+  const [mcpStatusLoaded, setMcpStatusLoaded] = useState(false);
   const [position, setPosition] = useState(() => ({
     x: typeof window !== 'undefined' ? Math.max(window.innerWidth - 440, 16) : 16,
     y: typeof window !== 'undefined' ? Math.max(window.innerHeight - 620, 16) : 16,
@@ -276,6 +295,33 @@ export const AIChatWidget: React.FC = () => {
   }, [messages, booking, suggestions, activeThreadId, storageKey]);
 
   useEffect(() => {
+    if (!isAuthenticated || !isOpen || mcpStatusLoaded) return;
+
+    let cancelled = false;
+    api.get('/mcp-tools/status')
+      .then((response) => {
+        if (!cancelled) setMcpStatus(response.data);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setMcpStatus({
+            connected: false,
+            bridge: 'FastAPI -> MCP tools -> PostgreSQL',
+            tool_count: 0,
+            tools: [],
+          });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setMcpStatusLoaded(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, isOpen, mcpStatusLoaded]);
+
+  useEffect(() => {
     if (!isOpen || isMaximized) return;
     const maxX = Math.max(window.innerWidth - size.width - 16, 16);
     const maxY = Math.max(window.innerHeight - size.height - 16, 16);
@@ -359,6 +405,393 @@ export const AIChatWidget: React.FC = () => {
     };
   }, []);
 
+  // ─── Provider & Admin MCP flows ───────────────────────────────────────────
+
+  type ProviderDashboard = {
+    provider: { name: string; specialization: string; location: string; hourly_rate: number; is_verified: boolean; experience_years: number };
+    appointments: { by_status: Record<string, number>; total: number };
+    revenue: { invoice_count: number; total_earned: number; avg_per_invoice: number };
+    ratings: { review_count: number; average: number; min: number; max: number };
+    recent_reviews: { customer: string; rating: number; comment: string; date: string }[];
+    upcoming_schedule: { id: string; customer: string; date: string; start_time: string; end_time: string; status: string; amount: number; notes: string }[];
+    pending_requests: { id: string; customer: string; customer_email: string; date: string; start_time: string; end_time: string; amount: number; notes: string }[];
+  };
+
+  type AdminDashboard = {
+    users: { total: number; customers: number; providers: number; verified_providers: number; pending_approvals: number };
+    appointments: { total: number; by_status: Record<string, number> };
+    revenue: { total: number; invoice_count: number; avg_per_invoice: number };
+    reviews: { total: number; average_rating: number };
+    top_providers_by_revenue: { name: string; specialization: string; location: string; rating: number; revenue: number }[];
+    top_rated_providers: { name: string; specialization: string; category: string; location: string; rating: number; total_reviews: number }[];
+    category_breakdown: { category: string; appointments: number; providers: number }[];
+    pending_provider_approvals: { id: string; name: string; email: string; specialization: string; category: string; location: string; applied_at: string }[];
+    recent_appointments: { customer_name: string; provider_name: string; appointment_date: string; start_time: string; status: string }[];
+  };
+
+  // Regex fallback — instant, no network needed
+  const detectIntentFallback = (text: string, role: 'provider' | 'admin'): string | null => {
+    if (role === 'provider') {
+      const patterns: [string, RegExp][] = [
+        ['pending',      /(pending|request|awaiting|waiting|naya req|nayi req|accept|reject)/i],
+        ['revenue',      /(revenue|earning|income|paise|paisa|kamai|kitna mila|paise aaye|kitna kamaya|rupee|rupay|payment|invoice|how much.*earn|how much.*made)/i],
+        ['ratings',      /(rating|review|feedback|star|score|reputation|meri rating|log kya bol|kitne star|average rat)/i],
+        ['upcoming',     /(upcoming|schedul|aaj|kal|today|tomorrow|next appoint|mera schedule|mere appoint|aane wale|view schedule)/i],
+        ['appointments', /(appoint|booking|completed|cancelled|confirmed|how many|kitne|breakdown|total appoint|saare appoint)/i],
+        ['dashboard',    /(dashboard|overview|summary|stats|statistics|sab kuch|meri performance|batao)/i],
+      ];
+      for (const [intent, rx] of patterns) if (rx.test(text)) return intent;
+    } else {
+      const patterns: [string, RegExp][] = [
+        ['topProviders', /(top provider|best provider|highest rated|most revenue|leaderboard|sabse acha|sabse zyada|number one provider)/i],
+        ['revenue',      /(revenue|earning|income|paise|paisa|kamai|kitna kamaya|financial|total revenue|platform.*earn|rupee|rupay|invoic|view report|report)/i],
+        ['approvals',    /(approval|approve|pending provider|unapproved|waiting provider|verify|verification|naye provider)/i],
+        ['categories',   /(categor|service type|which service|popular service|konsi service|kaunsi)/i],
+        ['users',        /(how many user|kitne user|kitne log|total user|new user|registered|users\b|usrs|user count|customer count)/i],
+        ['appointments', /(appoint|booking|how many booking|recent appoint|kitne appoint|total booking|saari booking)/i],
+        ['ratings',      /(rating|review|feedback|star|platform rating|average rating|kitne star|log kya bol)/i],
+        ['providers',    /(how many provider|total provider|verified provider|kitne provider|provider count|provider stat)/i],
+        ['overview',     /(overview|overvie|overvew|overv|summary|dashboard|platform overview|platform status|sab kuch|overall|haal batao|sab batao)/i],
+      ];
+      for (const [intent, rx] of patterns) if (rx.test(text)) return intent;
+    }
+    return null;
+  };
+
+  const classifyIntent = async (text: string, role: 'provider' | 'admin'): Promise<string | null> => {
+    // Fire LLM + regex in parallel; LLM wins if it responds in time
+    const fallback = detectIntentFallback(text, role);
+    try {
+      const res = await api.post('/ai-chat/intent', { message: text, role });
+      const { intent } = res.data as { intent: string | null };
+      return intent ?? fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
+  const fetchProviderDashboard = async (): Promise<ProviderDashboard | null> => {
+    try {
+      const res = await api.get('/mcp-tools/provider-dashboard');
+      return res.data as ProviderDashboard;
+    } catch {
+      return null;
+    }
+  };
+
+  const fetchAdminDashboard = async (): Promise<AdminDashboard | null> => {
+    try {
+      const res = await api.get('/mcp-tools/admin-dashboard');
+      return res.data as AdminDashboard;
+    } catch {
+      return null;
+    }
+  };
+
+  const handleProviderQuery = async (text: string): Promise<boolean> => {
+    const intent = await classifyIntent(text, 'provider');
+    if (!intent) return false;
+
+    setIsTyping(true);
+    const data = await fetchProviderDashboard();
+    await new Promise((r) => setTimeout(r, 300));
+    setIsTyping(false);
+
+    if (!data) {
+      addMessage('assistant', 'Could not load your dashboard right now. Please try again.');
+      return true;
+    }
+
+    const { provider, appointments, revenue, ratings, recent_reviews, upcoming_schedule, pending_requests } = data;
+    const bs = appointments.by_status;
+
+    if (intent === 'pending') {
+      if (pending_requests.length === 0) {
+        addMessage('assistant', '✅ No pending appointment requests right now. Your schedule is clear!', [
+          { label: 'View upcoming schedule', value: 'upcoming schedule', type: 'suggestion' },
+          { label: 'My stats overview', value: 'dashboard', type: 'suggestion' },
+        ]);
+      } else {
+        const lines = pending_requests.map((r) =>
+          `📋 ${r.customer} on ${r.date} at ${formatTime(r.start_time)}–${formatTime(r.end_time)} • ₹${r.amount}`
+        ).join('\n');
+        addMessage('assistant',
+          `You have ${pending_requests.length} pending request${pending_requests.length > 1 ? 's' : ''}:\n\n${lines}\n\nGo to Appointment Requests to accept or reject.`,
+          [
+            { label: 'Manage requests', value: '/provider/requests', type: 'link' },
+            { label: 'My full schedule', value: 'upcoming schedule', type: 'suggestion' },
+          ]
+        );
+      }
+      return true;
+    }
+
+    if (intent === 'upcoming') {
+      if (upcoming_schedule.length === 0) {
+        addMessage('assistant', '📅 No upcoming confirmed appointments. Check your availability settings.', [
+          { label: 'Manage availability', value: '/provider/availability', type: 'link' },
+          { label: 'Pending requests', value: 'pending requests', type: 'suggestion' },
+        ]);
+      } else {
+        const lines = upcoming_schedule.map((a) =>
+          `${a.status === 'pending' ? '⏳' : '✅'} ${a.customer} — ${a.date} ${formatTime(a.start_time)}–${formatTime(a.end_time)} [${a.status}]`
+        ).join('\n');
+        addMessage('assistant',
+          `📅 Your upcoming schedule (${upcoming_schedule.length} appointments):\n\n${lines}`,
+          [
+            { label: 'View full schedule', value: '/provider/schedule', type: 'link' },
+            { label: 'Pending requests', value: 'pending requests', type: 'suggestion' },
+          ]
+        );
+      }
+      return true;
+    }
+
+    if (intent === 'revenue') {
+      addMessage('assistant',
+        `💰 Revenue Summary for ${provider.name}:\n\n` +
+        `• Total earned: ₹${revenue.total_earned.toLocaleString('en-IN')}\n` +
+        `• Invoices generated: ${revenue.invoice_count}\n` +
+        `• Average per invoice: ₹${revenue.avg_per_invoice.toLocaleString('en-IN')}\n` +
+        `• Completed appointments: ${bs.completed || 0}`,
+        [
+          { label: 'My full dashboard', value: 'dashboard', type: 'suggestion' },
+          { label: 'My ratings', value: 'my ratings', type: 'suggestion' },
+        ]
+      );
+      return true;
+    }
+
+    if (intent === 'ratings') {
+      const recentLines = recent_reviews.slice(0, 3).map((r) =>
+        `${'⭐'.repeat(r.rating)} ${r.customer}: "${r.comment || 'No comment'}" (${r.date})`
+      ).join('\n');
+      addMessage('assistant',
+        `⭐ Ratings & Reviews for ${provider.name}:\n\n` +
+        `• Average rating: ${ratings.average}/5 from ${ratings.review_count} reviews\n` +
+        `• Best: ${ratings.max}/5 • Lowest: ${ratings.min}/5\n\n` +
+        (recentLines ? `Recent reviews:\n${recentLines}` : 'No reviews yet.'),
+        [
+          { label: 'My revenue', value: 'my revenue', type: 'suggestion' },
+          { label: 'My full stats', value: 'dashboard', type: 'suggestion' },
+        ]
+      );
+      return true;
+    }
+
+    if (intent === 'appointments') {
+      addMessage('assistant',
+        `📊 Appointment Breakdown for ${provider.name}:\n\n` +
+        `• Total: ${appointments.total}\n` +
+        `• Pending: ${bs.pending || 0}\n` +
+        `• Confirmed: ${bs.confirmed || 0}\n` +
+        `• Completed: ${bs.completed || 0}\n` +
+        `• Cancelled: ${bs.cancelled || 0}\n` +
+        `• Rejected: ${bs.rejected || 0}`,
+        [
+          { label: 'Pending requests', value: 'pending requests', type: 'suggestion' },
+          { label: 'Upcoming schedule', value: 'upcoming schedule', type: 'suggestion' },
+          { label: 'My revenue', value: 'my revenue', type: 'suggestion' },
+        ]
+      );
+      return true;
+    }
+
+    // Default: full dashboard
+    addMessage('assistant',
+      `📊 Dashboard — ${provider.name} (${provider.specialization}, ${provider.location})\n\n` +
+      `Appointments: ${appointments.total} total • ${bs.pending || 0} pending • ${bs.confirmed || 0} confirmed • ${bs.completed || 0} completed\n` +
+      `Revenue: ₹${revenue.total_earned.toLocaleString('en-IN')} from ${revenue.invoice_count} invoices\n` +
+      `Rating: ${ratings.average}/5 from ${ratings.review_count} reviews\n` +
+      `${provider.is_verified ? '✅ Verified provider' : '⏳ Pending verification'}`,
+      [
+        { label: `${bs.pending || 0} pending requests`, value: 'pending requests', type: 'suggestion' },
+        { label: 'Upcoming schedule', value: 'upcoming schedule', type: 'suggestion' },
+        { label: 'Revenue details', value: 'my revenue', type: 'suggestion' },
+        { label: 'Ratings & reviews', value: 'my ratings', type: 'suggestion' },
+      ]
+    );
+    return true;
+  };
+
+  const handleAdminQuery = async (text: string): Promise<boolean> => {
+    const intent = await classifyIntent(text, 'admin');
+    if (!intent) return false;
+
+    setIsTyping(true);
+    const data = await fetchAdminDashboard();
+    await new Promise((r) => setTimeout(r, 300));
+    setIsTyping(false);
+
+    if (!data) {
+      addMessage('assistant', 'Could not load admin dashboard right now. Please try again.');
+      return true;
+    }
+
+    const { users, appointments, revenue, reviews, top_providers_by_revenue, top_rated_providers, category_breakdown, pending_provider_approvals, recent_appointments } = data;
+    const bs = appointments.by_status;
+
+    if (intent === 'approvals') {
+      if (pending_provider_approvals.length === 0) {
+        addMessage('assistant', '✅ No provider approvals pending. All providers are verified!', [
+          { label: 'Platform overview', value: 'platform overview', type: 'suggestion' },
+          { label: 'Top providers', value: 'top providers', type: 'suggestion' },
+        ]);
+      } else {
+        const lines = pending_provider_approvals.map((p) =>
+          `👤 ${p.name} — ${p.specialization} (${p.category}) in ${p.location} · applied ${p.applied_at}`
+        ).join('\n');
+        addMessage('assistant',
+          `⏳ ${pending_provider_approvals.length} provider${pending_provider_approvals.length > 1 ? 's' : ''} awaiting approval:\n\n${lines}`,
+          [
+            { label: 'Go to approvals', value: '/admin/provider-approvals', type: 'link' },
+            { label: 'Platform overview', value: 'platform overview', type: 'suggestion' },
+          ]
+        );
+      }
+      return true;
+    }
+
+    if (intent === 'revenue') {
+      addMessage('assistant',
+        `💰 Platform Revenue:\n\n` +
+        `• Total revenue: ₹${revenue.total.toLocaleString('en-IN')}\n` +
+        `• Total invoices: ${revenue.invoice_count}\n` +
+        `• Avg per invoice: ₹${revenue.avg_per_invoice.toLocaleString('en-IN')}\n\n` +
+        `Top earners:\n` +
+        top_providers_by_revenue.slice(0, 3).map((p, i) =>
+          `${i + 1}. ${p.name} (${p.specialization}) — ₹${p.revenue.toLocaleString('en-IN')}`
+        ).join('\n'),
+        [
+          { label: 'Full overview', value: 'platform overview', type: 'suggestion' },
+          { label: 'Top providers', value: 'top providers', type: 'suggestion' },
+          { label: 'Go to reports', value: '/admin/reports', type: 'link' },
+        ]
+      );
+      return true;
+    }
+
+    if (intent === 'users') {
+      addMessage('assistant',
+        `👥 User Stats:\n\n` +
+        `• Total users: ${users.total}\n` +
+        `• Customers: ${users.customers}\n` +
+        `• Providers: ${users.providers} (${users.verified_providers} verified, ${users.pending_approvals} pending)`,
+        [
+          { label: 'Pending approvals', value: 'pending approvals', type: 'suggestion' },
+          { label: 'Manage users', value: '/admin/users', type: 'link' },
+          { label: 'Platform overview', value: 'platform overview', type: 'suggestion' },
+        ]
+      );
+      return true;
+    }
+
+    if (intent === 'providers') {
+      const lines = top_providers_by_revenue.slice(0, 5).map((p, i) =>
+        `${i + 1}. ${p.name} — ${p.specialization} (${p.location}) ★${p.rating} • ₹${p.revenue.toLocaleString('en-IN')}`
+      ).join('\n');
+      addMessage('assistant',
+        `🏥 Provider Stats:\n\n` +
+        `• Total: ${users.providers} • Verified: ${users.verified_providers} • Pending: ${users.pending_approvals}\n\n` +
+        `Top providers by revenue:\n${lines}`,
+        [
+          { label: 'Pending approvals', value: 'pending approvals', type: 'suggestion' },
+          { label: 'Top rated', value: 'top providers', type: 'suggestion' },
+          { label: 'Manage providers', value: '/admin/provider-approvals', type: 'link' },
+        ]
+      );
+      return true;
+    }
+
+    if (intent === 'appointments') {
+      const recent = recent_appointments.slice(0, 5).map((a) =>
+        `• ${a.customer_name} → ${a.provider_name} on ${a.appointment_date} [${a.status}]`
+      ).join('\n');
+      addMessage('assistant',
+        `📅 Appointment Stats:\n\n` +
+        `• Total: ${appointments.total}\n` +
+        `• Pending: ${bs.pending || 0} • Confirmed: ${bs.confirmed || 0}\n` +
+        `• Completed: ${bs.completed || 0} • Cancelled: ${bs.cancelled || 0}\n\n` +
+        `Recent:\n${recent}`,
+        [
+          { label: 'Platform overview', value: 'platform overview', type: 'suggestion' },
+          { label: 'Revenue', value: 'platform revenue', type: 'suggestion' },
+          { label: 'All appointments', value: '/admin/appointments', type: 'link' },
+        ]
+      );
+      return true;
+    }
+
+    if (intent === 'categories') {
+      const lines = category_breakdown.slice(0, 6).map((c) =>
+        `• ${c.category}: ${c.appointments} appointments, ${c.providers} providers`
+      ).join('\n');
+      addMessage('assistant',
+        `🗂️ Category Breakdown:\n\n${lines}`,
+        [
+          { label: 'Platform overview', value: 'platform overview', type: 'suggestion' },
+          { label: 'Manage categories', value: '/admin/categories', type: 'link' },
+        ]
+      );
+      return true;
+    }
+
+    if (intent === 'ratings') {
+      const topRated = top_rated_providers.slice(0, 3).map((p, i) =>
+        `${i + 1}. ${p.name} (${p.specialization}) ★${p.rating} from ${p.total_reviews} reviews`
+      ).join('\n');
+      addMessage('assistant',
+        `⭐ Platform Ratings:\n\n` +
+        `• Average rating: ${reviews.average_rating}/5\n` +
+        `• Total reviews: ${reviews.total}\n\n` +
+        `Top rated providers:\n${topRated}`,
+        [
+          { label: 'Top providers', value: 'top providers', type: 'suggestion' },
+          { label: 'Platform overview', value: 'platform overview', type: 'suggestion' },
+        ]
+      );
+      return true;
+    }
+
+    if (intent === 'topProviders') {
+      const byRevenue = top_providers_by_revenue.slice(0, 3).map((p, i) =>
+        `${i + 1}. ${p.name} — ₹${p.revenue.toLocaleString('en-IN')} (${p.specialization})`
+      ).join('\n');
+      const byRating = top_rated_providers.slice(0, 3).map((p, i) =>
+        `${i + 1}. ${p.name} — ★${p.rating} from ${p.total_reviews} reviews`
+      ).join('\n');
+      addMessage('assistant',
+        `🏆 Top Providers:\n\nBy Revenue:\n${byRevenue}\n\nBy Rating:\n${byRating}`,
+        [
+          { label: 'Revenue details', value: 'platform revenue', type: 'suggestion' },
+          { label: 'Platform overview', value: 'platform overview', type: 'suggestion' },
+        ]
+      );
+      return true;
+    }
+
+    // Default: full overview
+    const topCat = category_breakdown[0];
+    addMessage('assistant',
+      `🖥️ Platform Overview:\n\n` +
+      `👥 Users: ${users.total} total (${users.customers} customers, ${users.verified_providers} verified providers)\n` +
+      (users.pending_approvals > 0 ? `⚠️ ${users.pending_approvals} provider${users.pending_approvals > 1 ? 's' : ''} awaiting approval\n` : '') +
+      `📅 Appointments: ${appointments.total} total • ${bs.pending || 0} pending • ${bs.completed || 0} completed\n` +
+      `💰 Revenue: ₹${revenue.total.toLocaleString('en-IN')} from ${revenue.invoice_count} invoices\n` +
+      `⭐ Avg rating: ${reviews.average_rating}/5 from ${reviews.total} reviews\n` +
+      (topCat ? `🔥 Busiest category: ${topCat.category} (${topCat.appointments} appointments)` : ''),
+      [
+        users.pending_approvals > 0
+          ? { label: `⚠️ ${users.pending_approvals} pending approvals`, value: 'pending approvals', type: 'suggestion' as const }
+          : { label: 'Top providers', value: 'top providers', type: 'suggestion' as const },
+        { label: 'Revenue breakdown', value: 'platform revenue', type: 'suggestion' as const },
+        { label: 'Appointment stats', value: 'how many appointments', type: 'suggestion' as const },
+        { label: 'Category breakdown', value: 'category breakdown', type: 'suggestion' as const },
+      ]
+    );
+    return true;
+  };
+
   // ─── Booking Flow ──────────────────────────────────────────────────────────
 
   const isBookingIntent = (text: string) => {
@@ -385,12 +818,29 @@ export const AIChatWidget: React.FC = () => {
       .replace(/\s+/g, ' ')
       .trim();
 
+  const extractBookingLocation = (text: string): string => {
+    const q = text.toLowerCase();
+    const cityAliases: Record<string, string> = {
+      mumbai: 'Mumbai', mubai: 'Mumbai', bombay: 'Mumbai',
+      delhi: 'Delhi', 'new delhi': 'Delhi',
+      bangalore: 'Bangalore', bengaluru: 'Bangalore', banglore: 'Bangalore', bangaluru: 'Bangalore',
+      hyderabad: 'Hyderabad', hyd: 'Hyderabad',
+      chennai: 'Chennai', madras: 'Chennai',
+      pune: 'Pune',
+      kolkata: 'Kolkata', calcutta: 'Kolkata',
+      ahmedabad: 'Ahmedabad',
+    };
+    const matched = Object.keys(cityAliases).find((alias) => q.includes(alias));
+    return matched ? cityAliases[matched] : '';
+  };
+
   const startBookingFlow = async (userMessage: string) => {
     setBooking({ step: 'ask_service' });
     setIsTyping(true);
 
     // Extract service hint from message
     const q = userMessage.toLowerCase();
+    const locationHint = extractBookingLocation(userMessage);
     let serviceHint = '';
     if (q.includes('doctor') || q.includes('medical') || q.includes('health')) serviceHint = 'Healthcare';
     else if (q.includes('dentist') || q.includes('dental') || q.includes('teeth')) serviceHint = 'Dental Care';
@@ -404,11 +854,14 @@ export const AIChatWidget: React.FC = () => {
 
     if (serviceHint) {
       // Skip asking, go straight to providers
-      await searchProviders(serviceHint);
+      await searchProviders(serviceHint, { location: locationHint || undefined });
     } else {
       const extractedQuery = extractBookingSearchQuery(userMessage);
       if (extractedQuery.length >= 3) {
-        const foundProviders = await searchProviders(extractedQuery, { keepFlowOnEmpty: true });
+        const foundProviders = await searchProviders(extractedQuery, {
+          keepFlowOnEmpty: true,
+          location: locationHint || undefined,
+        });
         if (foundProviders) return;
       }
 
@@ -428,14 +881,15 @@ export const AIChatWidget: React.FC = () => {
 
   const searchProviders = async (
     service: string,
-    options?: { keepFlowOnEmpty?: boolean }
+    options?: { keepFlowOnEmpty?: boolean; location?: string }
   ) => {
-    setBooking((prev) => ({ ...prev, step: 'show_providers', service }));
+    const location = options?.location || booking.location || '';
+    setBooking((prev) => ({ ...prev, step: 'show_providers', service, location }));
     setIsTyping(true);
 
     try {
-      const res = await api.get('/providers', {
-        params: { search: service, page: 1, per_page: 5 },
+      const res = await api.get('/mcp-tools/providers', {
+        params: { query: service, location, limit: 5 },
       });
       const providers = res.data.providers || [];
 
@@ -452,20 +906,20 @@ export const AIChatWidget: React.FC = () => {
         );
 
         if (matchedCategory) {
-          const retry = await api.get('/providers', {
-            params: { category_id: matchedCategory.id, page: 1, per_page: 5 },
+          const retry = await api.get('/mcp-tools/providers', {
+            params: { category: matchedCategory.name, location, limit: 5 },
           });
           const retryProviders = retry.data.providers || [];
           if (retryProviders.length > 0) {
-            const retryActions: ChatAction[] = retryProviders.map((p: { id: string; user?: { full_name?: string }; specialization?: string; location?: string; rating?: number; hourly_rate?: number }) => ({
-              label: `${p.user?.full_name || 'Provider'} — ${p.specialization || service} (${p.location || 'N/A'}) ★${(p.rating || 0).toFixed(1)} • ₹${p.hourly_rate || 'N/A'}/hr`,
+            const retryActions: ChatAction[] = retryProviders.map((p: { id: string; name?: string; user?: { full_name?: string }; specialization?: string; location?: string; rating?: number; hourly_rate?: number }) => ({
+              label: `${p.name || p.user?.full_name || 'Provider'} — ${p.specialization || service} (${p.location || 'N/A'}) ★${(p.rating || 0).toFixed(1)} • ₹${p.hourly_rate || 'N/A'}/hr`,
               value: p.id,
               type: 'provider' as const,
-              data: { name: p.user?.full_name, specialization: p.specialization },
+              data: { name: p.name || p.user?.full_name, specialization: p.specialization },
             }));
 
             addMessage('assistant',
-              `I found providers under ${matchedCategory.name}. Which one would you like to book with?`,
+              `MCP tools found ${matchedCategory.name} providers${location ? ` in ${location}` : ''}. Which one would you like to book with?`,
               retryActions
             );
             return true;
@@ -485,15 +939,15 @@ export const AIChatWidget: React.FC = () => {
         return false;
       }
 
-      const actions: ChatAction[] = providers.map((p: { id: string; user?: { full_name?: string }; specialization?: string; location?: string; rating?: number; hourly_rate?: number }) => ({
-        label: `${p.user?.full_name || 'Provider'} — ${p.specialization || service} (${p.location || 'N/A'}) ★${(p.rating || 0).toFixed(1)} • ₹${p.hourly_rate || 'N/A'}/hr`,
+      const actions: ChatAction[] = providers.map((p: { id: string; name?: string; user?: { full_name?: string }; specialization?: string; location?: string; rating?: number; hourly_rate?: number }) => ({
+        label: `${p.name || p.user?.full_name || 'Provider'} — ${p.specialization || service} (${p.location || 'N/A'}) ★${(p.rating || 0).toFixed(1)} • ₹${p.hourly_rate || 'N/A'}/hr`,
         value: p.id,
         type: 'provider' as const,
-        data: { name: p.user?.full_name, specialization: p.specialization },
+        data: { name: p.name || p.user?.full_name, specialization: p.specialization },
       }));
 
       addMessage('assistant',
-        `Here are available ${service} providers. Which one would you like to book with?`,
+        `MCP tools found these ${service} providers${location ? ` in ${location}` : ''} from live data. Which one would you like to book with?`,
         actions
       );
       return true;
@@ -537,10 +991,10 @@ export const AIChatWidget: React.FC = () => {
     setIsTyping(true);
 
     try {
-      const res = await api.get(`/availability/${providerId}/slots`, {
+      const res = await api.get(`/mcp-tools/providers/${providerId}/availability`, {
         params: { date },
       });
-      const slots = res.data.slots || [];
+      const slots = (res.data.slots || []).filter((slot: { is_available?: boolean }) => slot.is_available !== false);
 
       await new Promise((r) => setTimeout(r, 400));
       setIsTyping(false);
@@ -601,7 +1055,13 @@ export const AIChatWidget: React.FC = () => {
     if (!providerId || !date || !slot) return;
 
     setBooking({ step: 'booked' });
-    navigate(`/book/${providerId}?date=${date}&time=${slot}`);
+    const params = new URLSearchParams({
+      date,
+      time: slot,
+      step: 'confirm',
+      source: 'chat',
+    });
+    navigate(`/book/${providerId}?${params.toString()}`);
     setIsOpen(false);
   };
 
@@ -637,7 +1097,28 @@ export const AIChatWidget: React.FC = () => {
       return;
     }
 
+    // Provider intent handling via MCP
+    if (userRole === 'provider') {
+      const handled = await handleProviderQuery(messageText);
+      if (handled) return;
+    }
+
+    // Admin intent handling via MCP
+    if (userRole === 'admin') {
+      const handled = await handleAdminQuery(messageText);
+      if (handled) return;
+    }
+
     // Customer booking flow
+    if (
+      userRole === 'customer' &&
+      isBookingIntent(messageText) &&
+      (booking.step === 'ask_service' || booking.step === 'show_providers')
+    ) {
+      await startBookingFlow(messageText);
+      return;
+    }
+
     if (userRole === 'customer' && isBookingIntent(messageText) && booking.step === 'idle') {
       await startBookingFlow(messageText);
       return;
@@ -658,6 +1139,25 @@ export const AIChatWidget: React.FC = () => {
         );
       } catch {
         addMessage('assistant', 'I could not load your wallet right now. Please open the Wallet page for the latest balance.');
+      }
+      return;
+    }
+
+    if (/(mcp|model context protocol)/i.test(messageText) && booking.step === 'idle') {
+      setIsTyping(true);
+      try {
+        const response = await api.get('/mcp-tools/status');
+        const data = response.data as McpStatus;
+        setMcpStatus(data);
+        setMcpStatusLoaded(true);
+        addMessage(
+          'assistant',
+          `MCP is ${data.connected ? 'connected' : 'not connected'} in the live app.\n\nBridge: ${data.bridge}\nTools: ${data.tool_count}\nDatabase: ${data.health?.database || 'unknown'}\nUsers visible to health check: ${data.health?.user_count ?? 'unknown'}`
+        );
+      } catch {
+        addMessage('assistant', 'I could not reach the MCP bridge from the live app right now.');
+      } finally {
+        setIsTyping(false);
       }
       return;
     }
@@ -744,6 +1244,7 @@ export const AIChatWidget: React.FC = () => {
     : messages.length === 0
     ? initialSuggestions.slice(0, 3)
     : [];
+  const draftPreview = input.trim();
 
   return (
     <>
@@ -777,6 +1278,9 @@ export const AIChatWidget: React.FC = () => {
                   <p className="text-sm font-semibold text-white">AppointEase AI</p>
                   <p className="text-[10px] text-gray-400">
                     {booking.step !== 'idle' ? '● Booking in progress...' : `${userRole} mode`}
+                  </p>
+                  <p className="text-[10px] text-gray-500">
+                    MCP {mcpStatus?.connected ? 'connected' : mcpStatusLoaded ? 'offline' : 'checking...'}
                   </p>
                 </div>
               </div>
@@ -883,9 +1387,16 @@ export const AIChatWidget: React.FC = () => {
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         {userRole === 'customer'
-                          ? 'I can book appointments for you, check your schedule, and more.'
+                          ? 'I can book appointments with MCP-backed provider search and availability.'
                           : 'Ask me anything about the platform.'}
                       </p>
+                      <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 px-3 py-1 text-[11px] text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-900">
+                        <span className={cn(
+                          'w-2 h-2 rounded-full',
+                          mcpStatus?.connected ? 'bg-green-500' : mcpStatusLoaded ? 'bg-red-500' : 'bg-gray-400'
+                        )} />
+                        MCP {mcpStatus?.connected ? `${mcpStatus.tool_count} tools ready` : mcpStatusLoaded ? 'bridge offline' : 'checking bridge'}
+                      </div>
                     </div>
                   )}
 
@@ -981,12 +1492,37 @@ export const AIChatWidget: React.FC = () => {
 
             {/* Input */}
             <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-              <div className="flex gap-2">
-                <input
-                  type="text"
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400">
+                    Message composer
+                  </span>
+                  <span className="text-[11px] text-gray-600 dark:text-gray-300">
+                    Press Enter to send, Shift+Enter for a new line.
+                  </span>
+                </div>
+                <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                  {input.length}/1000
+                </span>
+              </div>
+
+              {draftPreview && (
+                <div className="mb-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 px-3 py-2">
+                  <div className="text-[10px] uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400 mb-1">
+                    Live draft
+                  </div>
+                  <p className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
+                    {draftPreview}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex gap-2 items-end rounded-2xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 p-2 shadow-sm">
+                <textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
+                  rows={2}
                   placeholder={
                     booking.step === 'ask_service' ? 'Type a service (e.g., Healthcare)...' :
                     booking.step === 'show_providers' ? 'Select a provider above...' :
@@ -995,12 +1531,13 @@ export const AIChatWidget: React.FC = () => {
                     booking.step === 'confirm' ? 'Confirm or cancel above...' :
                     'Type a message...'
                   }
-                  className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-black/20 dark:focus:ring-white/20"
+                  className="flex-1 resize-none rounded-xl border-0 bg-transparent px-2 py-2.5 text-sm leading-6 text-gray-900 dark:text-gray-50 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-0"
                 />
                 <button
                   onClick={() => handleSend()}
                   disabled={!input.trim() || isTyping}
-                  className="px-3 py-2 rounded-lg bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
+                  aria-label="Send message"
                 >
                   <Send className="w-4 h-4" />
                 </button>

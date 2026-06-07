@@ -88,6 +88,7 @@ class UserResponse(BaseModel):
     role: UserRole
     avatar_url: Optional[str] = None
     is_active: bool
+    is_super_admin: bool = False
     provider_id: Optional[UUID] = None
     provider_is_verified: Optional[bool] = None
     provider_status: Optional[str] = None

@@ -68,6 +68,9 @@ class Settings(BaseSettings):
     # Gemini AI (Google)
     GEMINI_API_KEY: str = ""
 
+    # Document embeddings
+    DOCUMENT_EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
+
     # Microsoft OAuth
     MICROSOFT_CLIENT_ID: str = "9967d5ff-3a96-4399-9742-7b611991a74e"
     MICROSOFT_CLIENT_SECRET: str = ""

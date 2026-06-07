@@ -22,6 +22,7 @@ import { Card } from '@/components/ui/Card';
 import { SkeletonStats } from '@/components/ui/Skeleton';
 import { Timeline } from '@/components/ui/Timeline';
 import { PageTransition } from '@/components/layout/PageTransition';
+import { McpInsightsPanel } from '@/components/mcp/McpInsightsPanel';
 import { formatDate } from '@/utils';
 import { cn } from '@/utils/cn';
 import type { AdminStats, AuditLog } from '@/types';
@@ -141,6 +142,21 @@ export const AdminDashboard: React.FC = () => {
               </Link>
             </motion.div>
           ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <McpInsightsPanel />
+          <Card className="space-y-3">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Production Notes</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              The MCP bridge is now discoverable, role-aware, and available as a read-only analytics and assistant layer.
+            </p>
+            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+              <li>• The assistant can ask the bridge for live providers and availability.</li>
+              <li>• Admin workflows can inspect platform metrics from the same source of truth.</li>
+              <li>• The manifest endpoint makes client integration much easier to maintain.</li>
+            </ul>
+          </Card>
         </div>
 
         {/* Secondary stats */}
