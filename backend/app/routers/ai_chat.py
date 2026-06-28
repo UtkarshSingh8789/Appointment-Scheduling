@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import logging
+<<<<<<< HEAD
 import re
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 from typing import Literal
 
 import httpx
@@ -95,16 +98,21 @@ class AIChatResponse(BaseModel):
 
 
 async def _get_user_context(db: AsyncSession, user: User) -> str:
+<<<<<<< HEAD
     """Build role-specific live data context.
 
     Bug #24 fix: appointment counts fetched in a single GROUP BY query
     instead of 5–9 separate SELECT COUNT queries.
     """
+=======
+    """Build role-specific live data context."""
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     context_parts = [
         f"User: {user.full_name}, Role: {user.role.value}, Email: {user.email}",
     ]
 
     if user.role == UserRole.CUSTOMER:
+<<<<<<< HEAD
         # Single batched query for all status counts
         counts_result = await db.execute(
             select(Appointment.status, func.count(Appointment.id))
@@ -117,6 +125,44 @@ async def _get_user_context(db: AsyncSession, user: User) -> str:
         completed = status_counts.get("completed", 0)
         pending = status_counts.get("pending", 0)
         cancelled = status_counts.get("cancelled", 0)
+=======
+        result = await db.execute(
+            select(func.count(Appointment.id)).where(Appointment.customer_id == user.id)
+        )
+        total_appointments = result.scalar() or 0
+
+        result = await db.execute(
+            select(func.count(Appointment.id)).where(
+                Appointment.customer_id == user.id,
+                Appointment.status == AppointmentStatus.CONFIRMED,
+            )
+        )
+        upcoming = result.scalar() or 0
+
+        result = await db.execute(
+            select(func.count(Appointment.id)).where(
+                Appointment.customer_id == user.id,
+                Appointment.status == AppointmentStatus.COMPLETED,
+            )
+        )
+        completed = result.scalar() or 0
+
+        result = await db.execute(
+            select(func.count(Appointment.id)).where(
+                Appointment.customer_id == user.id,
+                Appointment.status == AppointmentStatus.PENDING,
+            )
+        )
+        pending = result.scalar() or 0
+
+        result = await db.execute(
+            select(func.count(Appointment.id)).where(
+                Appointment.customer_id == user.id,
+                Appointment.status == AppointmentStatus.CANCELLED,
+            )
+        )
+        cancelled = result.scalar() or 0
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
         loyalty_result = await db.execute(
             select(LoyaltyAccount).where(LoyaltyAccount.user_id == user.id)
@@ -163,6 +209,7 @@ async def _get_user_context(db: AsyncSession, user: User) -> str:
         provider = provider_result.scalar_one_or_none()
 
         if provider:
+<<<<<<< HEAD
             # Single batched query for all provider appointment status counts
             prov_counts_result = await db.execute(
                 select(Appointment.status, func.count(Appointment.id))
@@ -183,6 +230,46 @@ async def _get_user_context(db: AsyncSession, user: User) -> str:
             avg_rating_row = rating_result.one()
             avg_rating = float(avg_rating_row[0] or 0)
             review_count = avg_rating_row[1] or 0
+=======
+            result = await db.execute(
+                select(func.count(Appointment.id)).where(Appointment.provider_id == provider.id)
+            )
+            total = result.scalar() or 0
+
+            result = await db.execute(
+                select(func.count(Appointment.id)).where(
+                    Appointment.provider_id == provider.id,
+                    Appointment.status == AppointmentStatus.PENDING,
+                )
+            )
+            pending = result.scalar() or 0
+
+            result = await db.execute(
+                select(func.count(Appointment.id)).where(
+                    Appointment.provider_id == provider.id,
+                    Appointment.status == AppointmentStatus.CONFIRMED,
+                )
+            )
+            confirmed = result.scalar() or 0
+
+            result = await db.execute(
+                select(func.count(Appointment.id)).where(
+                    Appointment.provider_id == provider.id,
+                    Appointment.status == AppointmentStatus.COMPLETED,
+                )
+            )
+            completed = result.scalar() or 0
+
+            result = await db.execute(
+                select(func.avg(Review.rating)).where(Review.provider_id == provider.id)
+            )
+            avg_rating = result.scalar() or 0
+
+            result = await db.execute(
+                select(func.count(Review.id)).where(Review.provider_id == provider.id)
+            )
+            review_count = result.scalar() or 0
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
             revenue_result = await db.execute(
                 select(func.sum(Invoice.total_amount)).where(Invoice.provider_id == provider.id)
@@ -295,6 +382,7 @@ def _build_system_prompt(user_context: str, user_role: str, retrieval_bundle: di
         ),
         "admin": (
             "ADMIN ACCESS: You can discuss platform-wide stats, approvals, users, categories, appointments, reports, "
+<<<<<<< HEAD
             "and analytics. You have full access to view platform health, revenue forecasts, and fraud alerts."
         ),
     }
@@ -319,6 +407,20 @@ If the user asks how booking works internally, explain that Gemini/Grok generate
 
 {platform_knowledge}
 
+=======
+            "and analytics."
+        ),
+    }
+
+    return f"""
+You are the AppointEase AI Assistant.
+Use the retrieved live data and retrieved project knowledge below.
+Never invent providers, counts, prices, policies, or routes.
+If something is not present in the retrieved context, say so clearly.
+Keep answers short and practical.
+If the user asks how booking works internally, explain that Gemini/Grok generates wording, while AppointEase APIs and the database handle booking logic and persistence.
+
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 {role_boundaries.get(user_role, role_boundaries["customer"])}
 
 USER LIVE CONTEXT:
@@ -498,9 +600,13 @@ async def _generate_llm_reply(
         result = response.json()
         return result["choices"][0]["message"]["content"].strip()
 
+<<<<<<< HEAD
     raise HTTPException(status_code=503, detail="No AI service configured — set GEMINI_API_KEY or GROK_API_KEY")
 
 
+=======
+    raise HTTPException(status_code=503, detail="AI service not configured")
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
 
 async def _classify_intent_llm(message: str, role: str) -> str | None:
@@ -569,6 +675,10 @@ async def classify_intent(
         return IntentResponse(intent=llm_intent, confidence="high", source="llm")
 
     # Regex fallback
+<<<<<<< HEAD
+=======
+    import re
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     if role == "provider":
         patterns: list[tuple[str, re.Pattern[str]]] = [
             ("pending",      re.compile(r"(pending|request|awaiting|waiting|naya req|nayi req|accept|reject)", re.I)),

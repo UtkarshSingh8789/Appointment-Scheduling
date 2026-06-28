@@ -5,7 +5,11 @@ import hmac
 import logging
 from uuid import UUID
 
+<<<<<<< HEAD
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+=======
+from fastapi import APIRouter, Depends, HTTPException, status
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -125,6 +129,7 @@ async def create_order(
         return _mock_order_response(data, amount_paise)
 
 
+<<<<<<< HEAD
 @router.post("/webhook")
 async def razorpay_webhook(request: Request):
     """Handle Razorpay webhook events."""
@@ -151,6 +156,8 @@ async def razorpay_webhook(request: Request):
     return {"status": "ok"}
 
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 @router.post("/verify")
 async def verify_payment(
     data: VerifyPaymentRequest,

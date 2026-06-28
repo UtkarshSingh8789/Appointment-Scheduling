@@ -1,10 +1,18 @@
 import React, { useEffect, useState } from 'react';
+<<<<<<< HEAD
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Save, Sparkles } from 'lucide-react';
 import { providerService } from '@/services/providerService';
 import { aiService } from '@/services/aiService';
+=======
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Save } from 'lucide-react';
+import { providerService } from '@/services/providerService';
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 import { useCategories } from '@/hooks/useCategories';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -34,6 +42,7 @@ export const ProviderProfile: React.FC = () => {
   const [provider, setProvider] = useState<Provider | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+<<<<<<< HEAD
   const [bioGenerating, setBioGenerating] = useState(false);
   const [suggestedBio, setSuggestedBio] = useState('');
 
@@ -44,11 +53,27 @@ export const ProviderProfile: React.FC = () => {
   const currentSpecialization = watch('specialization');
   const watchedCategoryId = watch('category_id');
 
+=======
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ProfileFormData>({
+    resolver: zodResolver(profileSchema),
+  });
+
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const profile = await providerService.getMyProfile();
         setProvider(profile);
+<<<<<<< HEAD
+=======
+        // Populate form with provider data
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         reset({
           specialization: profile.specialization,
           category_id: profile.category_id,
@@ -68,6 +93,7 @@ export const ProviderProfile: React.FC = () => {
     fetchProfile();
   }, [reset]);
 
+<<<<<<< HEAD
   // Re-apply category_id once categories load (they may load after profile)
   useEffect(() => {
     if (provider?.category_id && categories.length > 0 && !watchedCategoryId) {
@@ -75,6 +101,8 @@ export const ProviderProfile: React.FC = () => {
     }
   }, [categories, provider, watchedCategoryId, setValue]);
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   const onSubmit = async (data: ProfileFormData) => {
     setIsSaving(true);
     try {
@@ -97,6 +125,7 @@ export const ProviderProfile: React.FC = () => {
     }
   };
 
+<<<<<<< HEAD
   // AI #18: Bio Generator
   const handleGenerateBio = async () => {
     if (!currentSpecialization) { toast.error('Fill in specialization first'); return; }
@@ -131,6 +160,13 @@ export const ProviderProfile: React.FC = () => {
   const categoryOptions = categories.map((c) => ({ value: c.id, label: c.name }));
 
   if (isLoading) return <LoadingSpinner size="lg" text="Loading profile..." />;
+=======
+  const categoryOptions = categories.map((c) => ({ value: c.id, label: c.name }));
+
+  if (isLoading) {
+    return <LoadingSpinner size="lg" text="Loading profile..." />;
+  }
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
   return (
     <PageTransition>
@@ -150,7 +186,13 @@ export const ProviderProfile: React.FC = () => {
               </p>
             </div>
             {provider.is_verified && (
+<<<<<<< HEAD
               <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium rounded-full">Verified</span>
+=======
+              <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium rounded-full">
+                Verified
+              </span>
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
             )}
           </div>
         </Card>
@@ -158,6 +200,7 @@ export const ProviderProfile: React.FC = () => {
 
       <Card className="dark:bg-gray-800 dark:border-gray-700">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+<<<<<<< HEAD
           <Input label="Specialization" placeholder="e.g., General Dentistry, Hair Styling" error={errors.specialization?.message} {...register('specialization')} />
 
           <Controller
@@ -219,6 +262,79 @@ export const ProviderProfile: React.FC = () => {
 
           <div className="flex justify-end pt-4">
             <Button type="submit" isLoading={isSaving} leftIcon={<Save className="w-4 h-4" />}>Save Changes</Button>
+=======
+          <Input
+            label="Specialization"
+            placeholder="e.g., General Dentistry, Hair Styling"
+            error={errors.specialization?.message}
+            {...register('specialization')}
+          />
+
+          <Select
+            label="Service Category"
+            options={categoryOptions}
+            placeholder="Select a category"
+            error={errors.category_id?.message}
+            {...register('category_id')}
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Years of Experience"
+              type="number"
+              min={0}
+              error={errors.experience_years?.message}
+              {...register('experience_years')}
+            />
+            <Input
+              label="Hourly Rate ($)"
+              type="number"
+              min={0}
+              step={0.01}
+              placeholder="0.00"
+              error={errors.hourly_rate?.message}
+              {...register('hourly_rate')}
+            />
+          </div>
+
+          <Input
+            label="Location"
+            placeholder="City, State"
+            error={errors.location?.message}
+            {...register('location')}
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Area"
+              placeholder="Local area"
+              error={errors.area?.message}
+              {...register('area')}
+            />
+            <Input
+              label="Pincode"
+              placeholder="Postal code"
+              error={errors.pincode?.message}
+              {...register('pincode')}
+            />
+          </div>
+
+          <TextArea
+            label="Profile Description"
+            placeholder="Tell customers about your services, experience, and what makes you unique..."
+            error={errors.profile_description?.message}
+            {...register('profile_description')}
+          />
+
+          <div className="flex justify-end pt-4">
+            <Button
+              type="submit"
+              isLoading={isSaving}
+              leftIcon={<Save className="w-4 h-4" />}
+            >
+              Save Changes
+            </Button>
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
           </div>
         </form>
       </Card>

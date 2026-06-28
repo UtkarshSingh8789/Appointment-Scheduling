@@ -55,6 +55,7 @@ class AuthService:
         )
 
         self.db.add(user)
+<<<<<<< HEAD
         try:
             await self.db.commit()
             await self.db.refresh(user)
@@ -66,6 +67,12 @@ class AuthService:
             )
 
         # Send welcome email after successful commit
+=======
+        await self.db.flush()
+        await self.db.refresh(user)
+
+        # Send welcome email
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         from app.services.email_service import email_service
         try:
             await email_service.send_welcome_email(

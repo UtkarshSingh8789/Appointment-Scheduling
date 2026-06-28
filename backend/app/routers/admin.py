@@ -1,6 +1,10 @@
 """Admin router."""
 
+<<<<<<< HEAD
 from datetime import date, datetime, timedelta, timezone as tz
+=======
+from datetime import date
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 from typing import List, Optional
 from uuid import UUID
 
@@ -189,6 +193,7 @@ async def list_all_appointments(
     summary="List pending provider applications",
 )
 async def list_pending_providers(
+<<<<<<< HEAD
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=50),
     admin: User = Depends(get_admin_user),
@@ -205,6 +210,14 @@ async def list_pending_providers(
     start = (page - 1) * per_page
     end = start + per_page
     page_items = all_providers[start:end]
+=======
+    admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """List all providers awaiting approval. Admin only."""
+    service = AdminService(db)
+    providers = await service.get_pending_providers()
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     return [
         ProviderApprovalResponse(
             provider=item["provider"],
@@ -212,9 +225,14 @@ async def list_pending_providers(
             documents=[OnboardingDocument(**doc) for doc in item.get("documents", [])],
             application=item.get("application"),
             summary=item.get("summary"),
+<<<<<<< HEAD
             review_status=item.get("review_status", "pending"),
         )
         for item in page_items
+=======
+        )
+        for item in providers
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     ]
 
 
@@ -359,6 +377,7 @@ async def broadcast_notification(
     result = await db.execute(query)
     users = result.scalars().all()
 
+<<<<<<< HEAD
     # Bug #36 fix: bulk insert instead of one-by-one loop (handles 1000+ users efficiently)
     from app.models.notification import Notification
     notifications = [
@@ -374,6 +393,18 @@ async def broadcast_notification(
     db.add_all(notifications)
     await db.commit()
     count = len(notifications)
+=======
+    notification_service = NotificationService(db)
+    count = 0
+    for user in users:
+        await notification_service.create_notification(
+            user_id=user.id,
+            type=NotificationType.SYSTEM,
+            title=data.title,
+            message=data.message,
+        )
+        count += 1
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
     return {"message": f"Notification sent to {count} users"}
 
@@ -451,10 +482,19 @@ async def get_reports(
     db: AsyncSession = Depends(get_db),
 ):
     """Get comprehensive platform reports. Admin only."""
+<<<<<<< HEAD
+=======
+    from datetime import datetime, timedelta
+
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     service = AdminService(db)
     stats = await service.get_platform_stats()
 
     # Revenue data (from invoices)
+<<<<<<< HEAD
+=======
+    from app.models.invoice import Invoice
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     revenue_result = await db.execute(
         select(func.sum(Invoice.total_amount))
     )
@@ -464,6 +504,7 @@ async def get_reports(
     monthly_data = []
     now = datetime.utcnow()
     for i in range(5, -1, -1):
+<<<<<<< HEAD
         # Use proper month arithmetic to avoid day-count drift
         month_offset = (now.month - 1 - i) % 12 + 1
         year_offset = now.year + ((now.month - 1 - i) // 12)
@@ -473,6 +514,13 @@ async def get_reports(
             month_end = now.replace(year=year_offset + 1, month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
         else:
             month_end = now.replace(year=year_offset, month=month_offset + 1, day=1, hour=0, minute=0, second=0, microsecond=0)
+=======
+        month_start = (now.replace(day=1) - timedelta(days=i * 30)).replace(day=1)
+        if i > 0:
+            month_end = (now.replace(day=1) - timedelta(days=(i - 1) * 30)).replace(day=1)
+        else:
+            month_end = now
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
         result = await db.execute(
             select(func.count(Appointment.id)).where(
@@ -554,6 +602,7 @@ async def get_reports(
         "user_growth": user_growth,
         "stats": stats,
     }
+<<<<<<< HEAD
 
 
 # ── AI Feature #7: Dynamic Pricing Suggestion ────────────────────────
@@ -602,3 +651,5 @@ async def run_nudge_job(
     from app.services.nudge_service import run_daily_nudges
     result = await run_daily_nudges(db)
     return result
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202

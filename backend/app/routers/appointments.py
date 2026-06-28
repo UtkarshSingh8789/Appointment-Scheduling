@@ -46,12 +46,15 @@ async def create_appointment(
     db: AsyncSession = Depends(get_db),
 ):
     """Book a new appointment with a service provider."""
+<<<<<<< HEAD
     # Validate that the appointment date is not in the past
     if data.appointment_date < date.today():
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Appointment date cannot be in the past.",
         )
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     service = AppointmentService(db)
     appointment = await service.create_appointment(current_user, data)
     return appointment
@@ -308,6 +311,7 @@ async def update_appointment_status(
     db: AsyncSession = Depends(get_db),
 ):
     """Update the status of an appointment (confirm, reject, complete, cancel)."""
+<<<<<<< HEAD
     # Bug #30: Validate ownership for customer cancellations before delegating to service
     from app.models.appointment import AppointmentStatus as AptStatus
     if current_user.role == UserRole.CUSTOMER and data.status == AptStatus.CANCELLED:
@@ -322,6 +326,8 @@ async def update_appointment_status(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You can only cancel your own appointments.",
             )
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     service = AppointmentService(db)
     appointment = await service.update_status(appointment_id, current_user, data)
     return appointment

@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+<<<<<<< HEAD
 import { MapPin, Star, Briefcase, Clock, ArrowLeft, DollarSign, Brain, ShieldCheck, MessageCircle, Send } from 'lucide-react';
 import { useProviderStore } from '@/store/providerStore';
 import { reviewService } from '@/services/reviewService';
 import { aiService } from '@/services/aiService';
+=======
+import { MapPin, Star, Briefcase, Clock, ArrowLeft, DollarSign } from 'lucide-react';
+import { useProviderStore } from '@/store/providerStore';
+import { reviewService } from '@/services/reviewService';
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 import { Card } from '@/components/ui/Card';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
@@ -21,12 +27,17 @@ export const ProviderDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { selectedProvider, isLoading, fetchProvider } = useProviderStore();
 
+<<<<<<< HEAD
+=======
+  // Reviews state
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewsTotal, setReviewsTotal] = useState(0);
   const [reviewsPage, setReviewsPage] = useState(1);
   const [reviewsTotalPages, setReviewsTotalPages] = useState(1);
   const [reviewsLoading, setReviewsLoading] = useState(false);
 
+<<<<<<< HEAD
   // AI states
   const [matchScore, setMatchScore] = useState<{ score: number; label: string; breakdown: Record<string, number> } | null>(null);
   const [trustScore, setTrustScore] = useState<{ trust_score: number; label: string; completion_rate: number } | null>(null);
@@ -38,14 +49,19 @@ export const ProviderDetail: React.FC = () => {
   const [autoReply, setAutoReply] = useState('');
   const [autoReplyLoading, setAutoReplyLoading] = useState(false);
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   useEffect(() => {
     if (id) {
       fetchProvider(id);
       loadReviews(id, 1);
+<<<<<<< HEAD
       // AI features — lazy load
       aiService.getProviderMatchScore(id).then(setMatchScore).catch(() => {});
       aiService.getProviderTrustScore(id).then(setTrustScore).catch(() => {});
       aiService.getReviewSummary(id).then((d) => d?.summary ? setReviewSummary(d) : null).catch(() => {});
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     }
   }, [id, fetchProvider]);
 
@@ -57,11 +73,18 @@ export const ProviderDetail: React.FC = () => {
       setReviewsTotal(data.total);
       setReviewsPage(data.page);
       setReviewsTotalPages(data.total_pages);
+<<<<<<< HEAD
     } catch { /* silent */ } finally {
+=======
+    } catch {
+      // Reviews might not be available
+    } finally {
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
       setReviewsLoading(false);
     }
   };
 
+<<<<<<< HEAD
   const handleAskFaq = async () => {
     if (!id || !faqQuestion.trim()) return;
     setFaqLoading(true);
@@ -81,6 +104,11 @@ export const ProviderDetail: React.FC = () => {
       setAutoReply(data.reply);
     } catch { setAutoReply('Unable to generate reply.'); } finally {
       setAutoReplyLoading(false);
+=======
+  const handleReviewPageChange = (page: number) => {
+    if (id) {
+      loadReviews(id, page);
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     }
   };
 
@@ -89,6 +117,11 @@ export const ProviderDetail: React.FC = () => {
   }
 
   const provider = selectedProvider;
+<<<<<<< HEAD
+=======
+
+  // Calculate rating distribution from reviews
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   const ratingDistribution = [5, 4, 3, 2, 1].map((star) => ({
     star,
     count: reviews.filter((r) => Math.round(r.rating) === star).length,
@@ -98,19 +131,39 @@ export const ProviderDetail: React.FC = () => {
   return (
     <PageTransition>
     <div className="space-y-6 max-w-4xl mx-auto">
+<<<<<<< HEAD
       <Link to="/providers" className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+=======
+      {/* Back button */}
+      <Link
+        to="/providers"
+        className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+      >
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         <ArrowLeft className="w-4 h-4" />
         Back to providers
       </Link>
 
+<<<<<<< HEAD
       {/* Provider header */}
       <Card className="dark:bg-gray-800 dark:border-gray-700">
         <div className="flex flex-col sm:flex-row items-start gap-6">
           <Avatar name={provider.user?.full_name || 'Provider'} src={getProviderImage(provider.id)} size="2xl" />
+=======
+      {/* Provider header with Book Appointment button */}
+      <Card className="dark:bg-gray-800 dark:border-gray-700">
+        <div className="flex flex-col sm:flex-row items-start gap-6">
+          <Avatar
+            name={provider.user?.full_name || 'Provider'}
+            src={getProviderImage(provider.id)}
+            size="2xl"
+          />
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
           <div className="flex-1">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
+<<<<<<< HEAD
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{provider.user?.full_name}</h1>
                   <FavoriteButton providerId={provider.id} />
                 </div>
@@ -124,6 +177,30 @@ export const ProviderDetail: React.FC = () => {
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                 <Briefcase className="w-4 h-4 text-gray-400" />{provider.experience_years} years experience
+=======
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {provider.user?.full_name}
+                  </h1>
+                  <FavoriteButton providerId={provider.id} />
+                </div>
+                <p className="text-lg text-primary-600 dark:text-primary-400 font-medium mt-1">
+                  {provider.specialization}
+                </p>
+              </div>
+              <Link to={`/book/${provider.id}`}>
+                <Button size="lg">Book Appointment</Button>
+              </Link>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-4">
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                <MapPin className="w-4 h-4 text-gray-400" />
+                {provider.location}
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                <Briefcase className="w-4 h-4 text-gray-400" />
+                {provider.experience_years} years experience
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                 <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
@@ -132,6 +209,7 @@ export const ProviderDetail: React.FC = () => {
               </div>
               {provider.hourly_rate && (
                 <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+<<<<<<< HEAD
                   <DollarSign className="w-4 h-4 text-gray-400" />{formatCurrency(provider.hourly_rate)}/hr
                 </div>
               )}
@@ -139,12 +217,25 @@ export const ProviderDetail: React.FC = () => {
             {provider.is_verified && (
               <span className="inline-flex items-center gap-1 mt-3 px-2.5 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium rounded-full">
                 <Clock className="w-3 h-3" />Verified Provider
+=======
+                  <DollarSign className="w-4 h-4 text-gray-400" />
+                  {formatCurrency(provider.hourly_rate)}/hr
+                </div>
+              )}
+            </div>
+
+            {provider.is_verified && (
+              <span className="inline-flex items-center gap-1 mt-3 px-2.5 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium rounded-full">
+                <Clock className="w-3 h-3" />
+                Verified Provider
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
               </span>
             )}
           </div>
         </div>
       </Card>
 
+<<<<<<< HEAD
       {/* AI #15 Match Score + AI #46 Trust Score */}
       {(matchScore || trustScore) && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -187,6 +278,14 @@ export const ProviderDetail: React.FC = () => {
       <Card className="dark:bg-gray-800 dark:border-gray-700">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">About</h2>
         <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{provider.profile_description || 'No description provided.'}</p>
+=======
+      {/* About section */}
+      <Card className="dark:bg-gray-800 dark:border-gray-700">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">About</h2>
+        <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+          {provider.profile_description || 'No description provided.'}
+        </p>
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
       </Card>
 
       {/* Category */}
@@ -199,12 +298,19 @@ export const ProviderDetail: React.FC = () => {
             </div>
             <div>
               <p className="font-medium text-gray-900 dark:text-gray-100">{provider.category.name}</p>
+<<<<<<< HEAD
               {provider.category.description && <p className="text-sm text-gray-500 dark:text-gray-400">{provider.category.description}</p>}
+=======
+              {provider.category.description && (
+                <p className="text-sm text-gray-500 dark:text-gray-400">{provider.category.description}</p>
+              )}
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
             </div>
           </div>
         </Card>
       )}
 
+<<<<<<< HEAD
       {/* AI #24: FAQ Auto-Answer */}
       <Card className="dark:bg-gray-800 dark:border-gray-700">
         <div className="flex items-center gap-2 mb-3">
@@ -262,10 +368,14 @@ export const ProviderDetail: React.FC = () => {
       </Card>
 
       {/* Ratings & Reviews */}
+=======
+      {/* Detailed Ratings & Reviews section */}
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
       <Card className="dark:bg-gray-800 dark:border-gray-700">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Ratings & Reviews</h2>
+<<<<<<< HEAD
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{reviewsTotal} review{reviewsTotal !== 1 ? 's' : ''} from verified customers</p>
           </div>
         </div>
@@ -302,18 +412,89 @@ export const ProviderDetail: React.FC = () => {
                   <div className="h-full bg-amber-400 rounded-full transition-all duration-500" style={{ width: `${(count / maxRatingCount) * 100}%` }} />
                 </div>
                 <span className="text-xs text-gray-500 dark:text-gray-400 w-6 text-right">{count}</span>
+=======
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+              {reviewsTotal} review{reviewsTotal !== 1 ? 's' : ''} from verified customers
+            </p>
+          </div>
+        </div>
+
+        {/* Rating summary */}
+        <div className="flex flex-col sm:flex-row gap-6 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+          {/* Overall rating */}
+          <div className="flex flex-col items-center justify-center sm:min-w-[120px]">
+            <p className="text-4xl font-bold text-gray-900 dark:text-gray-100">
+              {provider.rating.toFixed(1)}
+            </p>
+            <div className="flex items-center gap-0.5 mt-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  className={cn(
+                    'w-4 h-4',
+                    star <= Math.round(provider.rating)
+                      ? 'text-amber-400 fill-amber-400'
+                      : 'text-gray-300 dark:text-gray-600'
+                  )}
+                />
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              {provider.total_reviews} total
+            </p>
+          </div>
+
+          {/* Rating distribution bars */}
+          <div className="flex-1 space-y-2">
+            {ratingDistribution.map(({ star, count }) => (
+              <div key={star} className="flex items-center gap-2">
+                <span className="text-xs font-medium text-gray-600 dark:text-gray-400 w-4 text-right">
+                  {star}
+                </span>
+                <Star className="w-3 h-3 text-amber-400 fill-amber-400 flex-shrink-0" />
+                <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-amber-400 rounded-full transition-all duration-500"
+                    style={{ width: `${(count / maxRatingCount) * 100}%` }}
+                  />
+                </div>
+                <span className="text-xs text-gray-500 dark:text-gray-400 w-6 text-right">
+                  {count}
+                </span>
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
               </div>
             ))}
           </div>
         </div>
 
         {/* Individual reviews */}
+<<<<<<< HEAD
         {reviewsLoading ? <LoadingSpinner size="sm" /> : reviews.length === 0 ? (
           <p className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">No reviews yet. Be the first to leave a review after your appointment.</p>
         ) : (
           <div className="space-y-4">
             {reviews.map((review) => <ReviewCard key={review.id} review={review} />)}
             {reviewsTotalPages > 1 && <Pagination currentPage={reviewsPage} totalPages={reviewsTotalPages} onPageChange={(p) => id && loadReviews(id, p)} />}
+=======
+        {reviewsLoading ? (
+          <LoadingSpinner size="sm" />
+        ) : reviews.length === 0 ? (
+          <p className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">
+            No reviews yet. Be the first to leave a review after your appointment.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {reviews.map((review) => (
+              <ReviewCard key={review.id} review={review} />
+            ))}
+            {reviewsTotalPages > 1 && (
+              <Pagination
+                currentPage={reviewsPage}
+                totalPages={reviewsTotalPages}
+                onPageChange={handleReviewPageChange}
+              />
+            )}
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
           </div>
         )}
       </Card>

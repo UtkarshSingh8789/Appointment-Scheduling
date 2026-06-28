@@ -8,9 +8,13 @@ import {
   CheckCircle,
   DollarSign,
   MapPin,
+<<<<<<< HEAD
   Plus,
   Sparkles,
   Trash2,
+=======
+  Sparkles,
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   User,
 } from 'lucide-react';
 import { useCategories } from '@/hooks/useCategories';
@@ -23,6 +27,7 @@ import { TextArea } from '@/components/ui/TextArea';
 import { cn } from '@/utils/cn';
 import toast from 'react-hot-toast';
 
+<<<<<<< HEAD
 // ── Category-specific license/document options ────────────────────────
 const CATEGORY_DOCUMENTS: Record<string, string[]> = {
   default: ['Work Experience Certificate', 'Professional Portfolio', 'Reference Letter'],
@@ -53,6 +58,8 @@ interface DocumentEntry {
   file: File | null;
 }
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 interface OnboardingData {
   specialization: string;
   category_id: string;
@@ -71,8 +78,11 @@ const STEPS = [
   { label: 'Preview', icon: Sparkles },
 ];
 
+<<<<<<< HEAD
 const emptyDoc = (): DocumentEntry => ({ type: '', customName: '', file: null });
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 /** Multi-step onboarding wizard for new providers */
 export const ProviderOnboarding: React.FC = () => {
   const navigate = useNavigate();
@@ -82,12 +92,18 @@ export const ProviderOnboarding: React.FC = () => {
   const [isComplete, setIsComplete] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>('');
+<<<<<<< HEAD
   const [submitError, setSubmitError] = useState<string>('');
 
   // New structured document state
   const [licenseEntries, setLicenseEntries] = useState<DocumentEntry[]>([emptyDoc()]);
   const [identityEntries, setIdentityEntries] = useState<DocumentEntry[]>([emptyDoc()]);
 
+=======
+  const [supportFiles, setSupportFiles] = useState<File[]>([]);
+  const [submitError, setSubmitError] = useState<string>('');
+
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   const [data, setData] = useState<OnboardingData>({
     specialization: '',
     category_id: '',
@@ -103,6 +119,7 @@ export const ProviderOnboarding: React.FC = () => {
     setData((prev) => ({ ...prev, [field]: value }));
   };
 
+<<<<<<< HEAD
   // Derive document type options from selected category
   const categoryName = categories.find((c) => c.id === data.category_id)?.name || '';
   const licenseOptions =
@@ -131,17 +148,25 @@ export const ProviderOnboarding: React.FC = () => {
     return files;
   };
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   const canProceed = (): boolean => {
     switch (currentStep) {
       case 0:
         return Boolean(data.category_id && data.location && data.pincode);
       case 1:
+<<<<<<< HEAD
         return Boolean(data.specialization && data.experience_years > 0 && data.hourly_rate > 0);
       case 2: {
         const hasLicense = licenseEntries.some((e) => e.file !== null);
         const hasIdentity = identityEntries.some((e) => e.file !== null);
         return hasLicense && hasIdentity;
       }
+=======
+        return Boolean(data.specialization && data.experience_years > 0);
+      case 2:
+        return data.hourly_rate > 0 && supportFiles.length > 0;
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
       case 3:
         return true;
       default:
@@ -163,6 +188,7 @@ export const ProviderOnboarding: React.FC = () => {
 
   const handleAvatarChange = (file: File | null) => {
     setAvatarFile(file);
+<<<<<<< HEAD
     if (avatarPreview) URL.revokeObjectURL(avatarPreview);
     setAvatarPreview(file ? URL.createObjectURL(file) : '');
   };
@@ -171,6 +197,21 @@ export const ProviderOnboarding: React.FC = () => {
     setIsSubmitting(true);
     setSubmitError('');
     const supportFiles = allDocumentFiles();
+=======
+    if (avatarPreview) {
+      URL.revokeObjectURL(avatarPreview);
+    }
+    setAvatarPreview(file ? URL.createObjectURL(file) : '');
+  };
+
+  const handleDocumentsChange = (files: FileList | null) => {
+    setSupportFiles(files ? Array.from(files) : []);
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setSubmitError('');
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     try {
       if (!data.category_id) {
         toast.error('Please select a service category.');
@@ -192,8 +233,18 @@ export const ProviderOnboarding: React.FC = () => {
       if (data.pincode.trim()) formData.append('pincode', data.pincode.trim());
       if (data.profile_description.trim()) formData.append('profile_description', data.profile_description.trim());
       formData.append('hourly_rate', String(data.hourly_rate));
+<<<<<<< HEAD
       if (avatarFile) formData.append('avatar_file', avatarFile);
       supportFiles.forEach((file) => formData.append('documents', file));
+=======
+
+      if (avatarFile) {
+        formData.append('avatar_file', avatarFile);
+      }
+      supportFiles.forEach((file) => {
+        formData.append('documents', file);
+      });
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
       await providerService.registerApplication(formData);
       setIsComplete(true);
@@ -201,14 +252,37 @@ export const ProviderOnboarding: React.FC = () => {
       setTimeout(() => navigate('/provider/pending'), 1800);
     } catch (error: unknown) {
       const err = error as {
+<<<<<<< HEAD
         response?: { data?: { detail?: string | string[] | Array<{ msg?: string; loc?: (string | number)[] }> } };
+=======
+        response?: {
+          data?: {
+            detail?: string | string[] | Array<{ msg?: string; loc?: (string | number)[]; type?: string; input?: unknown }>;
+          };
+        };
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
       };
       const detail = err.response?.data?.detail;
       if (Array.isArray(detail)) {
         const first = detail[0];
+<<<<<<< HEAD
         const msg = typeof first === 'string' ? first : `${Array.isArray((first as { loc?: unknown[] }).loc) ? (first as { loc: (string | number)[] }).loc.join('.') : 'field'}: ${(first as { msg?: string }).msg || 'validation error'}`;
         setSubmitError(msg);
         toast.error(msg);
+=======
+        if (typeof first === 'string') {
+          setSubmitError(first);
+          toast.error(first);
+        } else if (first && typeof first === 'object') {
+          const field = Array.isArray(first.loc) ? first.loc.join('.') : 'unknown field';
+          const message = `${field}: ${first.msg || 'validation error'}`;
+          setSubmitError(message);
+          toast.error(message);
+        } else {
+          setSubmitError('Failed to submit your application. Please try again.');
+          toast.error('Failed to submit your application. Please try again.');
+        }
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
       } else if (typeof detail === 'string') {
         setSubmitError(detail);
         toast.error(detail);
@@ -423,18 +497,36 @@ export const ProviderOnboarding: React.FC = () => {
                     {data.experience_years} year{data.experience_years > 1 ? 's' : ''} of professional experience
                   </p>
                 </div>
+<<<<<<< HEAD
                 {/* Hourly rate moved here so step 2 is complete before documents */}
+=======
+              </div>
+            )}
+
+            {currentStep === 2 && (
+              <div className="space-y-5">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Upload your supporting documents
+                </h3>
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Hourly Rate (₹)
                   </label>
                   <div className="relative">
+<<<<<<< HEAD
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-medium">₹</span>
+=======
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-medium">
+                      ₹
+                    </span>
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
                     <input
                       type="number"
                       min="100"
                       step="50"
                       value={data.hourly_rate}
+<<<<<<< HEAD
                       onChange={(e) => updateData('hourly_rate', Math.max(100, parseInt(e.target.value) || 100))}
                       className="w-full pl-8 pr-16 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-lg font-semibold bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
                     />
@@ -605,6 +697,41 @@ export const ProviderOnboarding: React.FC = () => {
                     Please upload at least one license/certificate and one proof of identity to continue.
                   </p>
                 )}
+=======
+                      onChange={(e) => updateData('hourly_rate', parseInt(e.target.value) || 0)}
+                      className="w-full pl-8 pr-16 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-lg font-semibold bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 dark:text-gray-500">
+                      /hour
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    💡 Tip: Similar providers in your area charge ₹500–₹2,000/hr
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Certificates / Licenses / Documents
+                  </label>
+                  <input
+                    type="file"
+                    multiple
+                    required
+                    accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.txt"
+                    onChange={(e) => handleDocumentsChange(e.target.files)}
+                    className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-black file:text-white dark:file:bg-white dark:file:text-black hover:file:opacity-90"
+                  />
+                  {supportFiles.length > 0 && (
+                    <ul className="mt-2 space-y-1 text-sm text-gray-500 dark:text-gray-400">
+                      {supportFiles.map((file) => (
+                        <li key={file.name} className="truncate">
+                          {file.name}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
               </div>
             )}
 
@@ -648,6 +775,7 @@ export const ProviderOnboarding: React.FC = () => {
                     <span className="text-gray-500 dark:text-gray-400">Application status</span>
                     <span className="font-semibold text-gray-900 dark:text-gray-100">Pending admin approval</span>
                   </div>
+<<<<<<< HEAD
                   {allDocumentFiles().length > 0 && (
                     <div className="space-y-2">
                       <p className="text-xs text-gray-500 dark:text-gray-400">Uploaded documents</p>
@@ -659,6 +787,15 @@ export const ProviderOnboarding: React.FC = () => {
                               {e.type === 'Others' ? e.customName || 'Others' : e.type}: {e.file!.name}
                             </li>
                           ))}
+=======
+                  {supportFiles.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Uploaded documents</p>
+                      <ul className="space-y-1 text-sm text-gray-900 dark:text-gray-100">
+                        {supportFiles.map((file) => (
+                          <li key={file.name} className="truncate">{file.name}</li>
+                        ))}
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
                       </ul>
                     </div>
                   )}

@@ -158,6 +158,7 @@ class AppointmentService:
         await self.db.flush()
         await self.db.refresh(appointment)
 
+<<<<<<< HEAD
         # AI Feature #1: Compute no-show risk and store on appointment
         try:
             from app.services.no_show_predictor import compute_no_show_risk
@@ -169,6 +170,8 @@ class AppointmentService:
         except Exception:
             pass  # Non-blocking
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         # Create notification for provider
         notification_service = NotificationService(self.db)
         await notification_service.create_notification(
@@ -524,6 +527,7 @@ class AppointmentService:
                 user_id=appointment.customer_id,
                 event_type="booking_completed",
             )
+<<<<<<< HEAD
             # AI Feature #4: Generate post-appointment AI summary (non-blocking)
             try:
                 from app.services.appointment_summary_service import generate_appointment_summary
@@ -552,6 +556,8 @@ class AppointmentService:
                     await self.db.flush()
             except Exception:
                 pass  # Non-blocking
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
         # Reload with relationships
         result = await self.db.execute(

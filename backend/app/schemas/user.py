@@ -52,7 +52,11 @@ class UserUpdate(BaseModel):
 
     full_name: Optional[str] = Field(None, min_length=2, max_length=255)
     phone_number: Optional[str] = Field(None, max_length=20)
+<<<<<<< HEAD
     avatar_url: Optional[str] = Field(None, max_length=65535)
+=======
+    avatar_url: Optional[str] = Field(None, max_length=500)
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
 
 class PasswordChange(BaseModel):
@@ -89,7 +93,10 @@ class UserResponse(BaseModel):
     avatar_url: Optional[str] = None
     is_active: bool
     is_super_admin: bool = False
+<<<<<<< HEAD
     is_premium: bool = False
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     provider_id: Optional[UUID] = None
     provider_is_verified: Optional[bool] = None
     provider_status: Optional[str] = None

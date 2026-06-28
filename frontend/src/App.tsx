@@ -1,11 +1,16 @@
 import React, { Suspense, lazy, useEffect } from 'react';
+<<<<<<< HEAD
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+=======
+import { Routes, Route, Navigate } from 'react-router-dom';
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 import { useAuthStore } from '@/store/authStore';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { ProviderApprovalGate } from '@/components/auth/ProviderApprovalGate';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+<<<<<<< HEAD
 import toast from 'react-hot-toast';
 
 // Lazy-loaded pages for code splitting
@@ -14,6 +19,13 @@ const CalcomHub = lazy(() => import('@/pages/CalcomHub').then(m => ({ default: m
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage').then(m => ({ default: m.LoginPage })));
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage').then(m => ({ default: m.RegisterPage })));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
+=======
+
+// Lazy-loaded pages for code splitting
+const LandingPage = lazy(() => import('@/pages/LandingPage').then(m => ({ default: m.LandingPage })));
+const LoginPage = lazy(() => import('@/pages/auth/LoginPage').then(m => ({ default: m.LoginPage })));
+const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage').then(m => ({ default: m.RegisterPage })));
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
 // Customer pages
 const CustomerDashboard = lazy(() => import('@/pages/customer/CustomerDashboard').then(m => ({ default: m.CustomerDashboard })));
@@ -30,7 +42,10 @@ const Wallet = lazy(() => import('@/pages/customer/Wallet').then(m => ({ default
 const Invoices = lazy(() => import('@/pages/customer/Invoices').then(m => ({ default: m.Invoices })));
 const Settings = lazy(() => import('@/pages/customer/Settings').then(m => ({ default: m.Settings })));
 const Profile = lazy(() => import('@/pages/customer/Profile').then(m => ({ default: m.Profile })));
+<<<<<<< HEAD
 const PremiumPage = lazy(() => import('@/pages/PremiumPage').then(m => ({ default: m.PremiumPage })));
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
 // Provider pages
 const ProviderDashboard = lazy(() => import('@/pages/provider/ProviderDashboard').then(m => ({ default: m.ProviderDashboard })));
@@ -41,7 +56,10 @@ const ProviderProfile = lazy(() => import('@/pages/provider/ProviderProfile').th
 const ProviderPublicProfile = lazy(() => import('@/pages/provider/ProviderPublicProfile').then(m => ({ default: m.ProviderPublicProfile })));
 const ProviderOnboardingPage = lazy(() => import('@/pages/provider/ProviderOnboardingPage').then(m => ({ default: m.ProviderOnboardingPage })));
 const ProviderPendingApprovalPage = lazy(() => import('@/pages/provider/ProviderPendingApprovalPage').then(m => ({ default: m.ProviderPendingApprovalPage })));
+<<<<<<< HEAD
 const IntegrationsPage = lazy(() => import('@/pages/provider/Integrations').then(m => ({ default: m.IntegrationsPage })));
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
 // Admin pages
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
@@ -60,6 +78,7 @@ const PageLoader = () => (
 );
 
 const App: React.FC = () => {
+<<<<<<< HEAD
   const { isInitialized, initialize } = useAuthStore();
   const navigate = useNavigate();
   const [isProcessingOAuth, setIsProcessingOAuth] = React.useState(
@@ -100,12 +119,24 @@ const App: React.FC = () => {
     const accessToken = params.get('access_token');
     const refreshToken = params.get('refresh_token');
     const authError = params.get('error');
+=======
+  const { isAuthenticated, isInitialized, initialize } = useAuthStore();
+  const hasOAuthTokens = new URLSearchParams(window.location.search).has('access_token');
+  const [isProcessingOAuth, setIsProcessingOAuth] = React.useState(hasOAuthTokens);
+
+  useEffect(() => {
+    // Handle OAuth callback — extract tokens from URL params
+    const params = new URLSearchParams(window.location.search);
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     let cancelled = false;
 
     const processOAuth = async () => {
       if (accessToken) {
         localStorage.setItem('access_token', accessToken);
         if (refreshToken) localStorage.setItem('refresh_token', refreshToken);
+<<<<<<< HEAD
         // Clean URL immediately — no reload needed
         window.history.replaceState({}, '', window.location.pathname);
       }
@@ -124,6 +155,24 @@ const App: React.FC = () => {
         if (!cancelled) {
           setIsProcessingOAuth(false);
         }
+=======
+        // Clean URL
+        window.history.replaceState({}, '', window.location.pathname);
+
+        if (!window.sessionStorage.getItem('oauth_reload_complete')) {
+          window.sessionStorage.setItem('oauth_reload_complete', '1');
+          window.location.replace(window.location.pathname);
+          return;
+        }
+
+        window.sessionStorage.removeItem('oauth_reload_complete');
+      }
+
+      // Initialize auth state on app load (fetch user if token exists)
+      await initialize();
+      if (!cancelled) {
+        setIsProcessingOAuth(false);
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
       }
     };
 
@@ -142,8 +191,13 @@ const App: React.FC = () => {
     );
   }
 
+<<<<<<< HEAD
   // Show full-page loader until auth state is initialized (only when there IS a token)
   if (!isInitialized && localStorage.getItem('access_token')) {
+=======
+  // Show full-page loader until auth state is initialized
+  if (!isInitialized && isAuthenticated) {
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <LoadingSpinner size="lg" text="Loading your account..." />
@@ -157,7 +211,10 @@ const App: React.FC = () => {
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<LandingPage />} />
+<<<<<<< HEAD
           <Route path="/calcom" element={<CalcomHub />} />
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/p/:id" element={<ProviderPublicProfile />} />
@@ -201,7 +258,10 @@ const App: React.FC = () => {
             <Route path="/invoices" element={<ProtectedRoute allowedRoles={['customer', 'provider']}><Invoices /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute allowedRoles={['customer', 'provider', 'admin']}><Settings /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute allowedRoles={['customer', 'provider', 'admin']}><Profile /></ProtectedRoute>} />
+<<<<<<< HEAD
             <Route path="/premium" element={<ProtectedRoute allowedRoles={['customer', 'provider', 'admin']}><PremiumPage /></ProtectedRoute>} />
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
             {/* Provider routes */}
             <Route element={<ProtectedRoute allowedRoles={['provider']}><ProviderApprovalGate /></ProtectedRoute>}>
@@ -210,7 +270,10 @@ const App: React.FC = () => {
               <Route path="/provider/appointments" element={<AppointmentRequests />} />
               <Route path="/provider/schedule" element={<ProviderSchedule />} />
               <Route path="/provider/profile" element={<ProviderProfile />} />
+<<<<<<< HEAD
               <Route path="/provider/integrations" element={<IntegrationsPage />} />
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
             </Route>
 
             {/* Admin routes */}
@@ -224,8 +287,13 @@ const App: React.FC = () => {
             <Route path="/admin/settings" element={<Navigate to="/settings" replace />} />
           </Route>
 
+<<<<<<< HEAD
           {/* Default fallback */}
           <Route path="*" element={<NotFoundPage />} />
+=======
+          {/* Default redirect */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         </Routes>
       </Suspense>
     </ErrorBoundary>

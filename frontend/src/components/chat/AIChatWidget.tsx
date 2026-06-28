@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+=======
+import React, { useState, useRef, useEffect } from 'react';
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MessageCircle,
@@ -15,8 +19,11 @@ import {
   Minimize2,
   History,
   Plus,
+<<<<<<< HEAD
   Mic,
   MicOff,
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -148,6 +155,7 @@ export const AIChatWidget: React.FC = () => {
   const isMaximizedRef = useRef(isMaximized);
   const storageKey = user?.id ? `appointease-chat-threads-${user.id}` : '';
 
+<<<<<<< HEAD
   // AI Feature #10: Voice-to-Booking — Web Speech API
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<unknown>(null);
@@ -196,6 +204,8 @@ export const AIChatWidget: React.FC = () => {
     setIsListening(false);
   }, []);
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   if (!isAuthenticated) return null;
 
   const userRole = user?.role || 'customer';
@@ -1294,6 +1304,10 @@ export const AIChatWidget: React.FC = () => {
     : messages.length === 0
     ? initialSuggestions.slice(0, 3)
     : [];
+<<<<<<< HEAD
+=======
+  const draftPreview = input.trim();
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
   return (
     <>
@@ -1541,6 +1555,34 @@ export const AIChatWidget: React.FC = () => {
 
             {/* Input */}
             <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+<<<<<<< HEAD
+=======
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400">
+                    Message composer
+                  </span>
+                  <span className="text-[11px] text-gray-600 dark:text-gray-300">
+                    Press Enter to send, Shift+Enter for a new line.
+                  </span>
+                </div>
+                <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                  {input.length}/1000
+                </span>
+              </div>
+
+              {draftPreview && (
+                <div className="mb-2 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 px-3 py-2">
+                  <div className="text-[10px] uppercase tracking-[0.22em] text-gray-500 dark:text-gray-400 mb-1">
+                    Live draft
+                  </div>
+                  <p className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
+                    {draftPreview}
+                  </p>
+                </div>
+              )}
+
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
               <div className="flex gap-2 items-end rounded-2xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 p-2 shadow-sm">
                 <textarea
                   value={input}
@@ -1557,6 +1599,7 @@ export const AIChatWidget: React.FC = () => {
                   }
                   className="flex-1 resize-none rounded-xl border-0 bg-transparent px-2 py-2.5 text-sm leading-6 text-gray-900 dark:text-gray-50 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-0"
                 />
+<<<<<<< HEAD
                 {/* AI Feature #10: Voice input button — hidden if browser doesn't support */}
                 {speechSupported && (
                   <button
@@ -1572,6 +1615,8 @@ export const AIChatWidget: React.FC = () => {
                     {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                   </button>
                 )}
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
                 <button
                   onClick={() => handleSend()}
                   disabled={!input.trim() || isTyping}

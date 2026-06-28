@@ -16,7 +16,10 @@ import { PageTransition } from '@/components/layout/PageTransition';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { loyaltyService } from '@/services/loyaltyService';
+<<<<<<< HEAD
 import { aiService } from '@/services/aiService';
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 import type { LoyaltyAccount, LoyaltyTransaction } from '@/services/loyaltyService';
 import { formatCurrency, formatDate } from '@/utils';
 import { cn } from '@/utils/cn';
@@ -61,7 +64,10 @@ export const Wallet: React.FC = () => {
   const [hasWallet, setHasWallet] = useState(true);
   const [topUpAmount, setTopUpAmount] = useState(100);
   const [isTopUpLoading, setIsTopUpLoading] = useState(false);
+<<<<<<< HEAD
   const [budgetEstimate, setBudgetEstimate] = useState<{ spent_this_month: number; upcoming_appointments: number; projected_total_this_month: number; message: string } | null>(null);
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
   const loadWallet = useCallback(async () => {
     setIsLoading(true);
@@ -172,8 +178,11 @@ export const Wallet: React.FC = () => {
 
   useEffect(() => {
     loadWallet();
+<<<<<<< HEAD
     // AI #27: Budget estimator
     aiService.getBudgetEstimate().then(setBudgetEstimate).catch(() => {});
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   }, [loadWallet]);
 
   const balance = account?.points ?? 0;
@@ -224,6 +233,7 @@ export const Wallet: React.FC = () => {
           </p>
         </motion.div>
 
+<<<<<<< HEAD
         {/* AI #27: Budget Estimator */}
         {budgetEstimate && (
           <motion.div variants={itemVariants}>
@@ -248,6 +258,8 @@ export const Wallet: React.FC = () => {
           </motion.div>
         )}
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         {/* Hero balance card */}
         <motion.div variants={itemVariants}>
           <Card className="border-gray-200 dark:border-gray-800">

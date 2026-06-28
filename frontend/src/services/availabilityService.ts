@@ -41,6 +41,7 @@ export const availabilityService = {
     return response.data;
   },
 
+<<<<<<< HEAD
   /** AI Feature #2: Get AI-ranked smart slot suggestions for a customer */
   async getSmartSlots(
     providerId: string,
@@ -53,6 +54,8 @@ export const availabilityService = {
     return response.data;
   },
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   /** Get availability exceptions (blocked dates) for a provider */
   async getExceptions(providerId: string, month?: string): Promise<AvailabilityException[]> {
     const response = await api.get<AvailabilityException[]>(

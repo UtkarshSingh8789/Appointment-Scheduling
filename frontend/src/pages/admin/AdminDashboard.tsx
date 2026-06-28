@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+<<<<<<< HEAD
 import { Users, Calendar, FolderOpen, UserCheck, Clock, Star, CalendarCheck, UserPlus, TrendingUp, AlertTriangle, Brain, ShieldAlert, BarChart3 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
@@ -8,6 +9,25 @@ import {
 } from 'recharts';
 import { adminService } from '@/services/adminService';
 import { aiService } from '@/services/aiService';
+=======
+import { Users, Calendar, FolderOpen, UserCheck, Clock, Star, CalendarCheck, UserPlus, TrendingUp } from 'lucide-react';
+import { motion } from 'framer-motion';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+} from 'recharts';
+import { adminService } from '@/services/adminService';
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 import { StatsCard } from '@/components/ui/StatsCard';
 import { Card } from '@/components/ui/Card';
 import { SkeletonStats } from '@/components/ui/Skeleton';
@@ -19,10 +39,22 @@ import { cn } from '@/utils/cn';
 import type { AdminStats, AuditLog } from '@/types';
 import type { TimelineStep } from '@/components/ui/Timeline';
 
+<<<<<<< HEAD
 function generateWeeklyData(total: number) {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const weights = [0.16, 0.15, 0.17, 0.14, 0.15, 0.12, 0.11];
   return days.map((day, i) => ({ name: day, appointments: Math.round(total * weights[i]) }));
+=======
+// Deterministic weekly distribution based on total (no random data)
+function generateWeeklyData(total: number) {
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  // Distribute appointments with a realistic weekday-heavy pattern
+  const weights = [0.16, 0.15, 0.17, 0.14, 0.15, 0.12, 0.11];
+  return days.map((day, i) => ({
+    name: day,
+    appointments: Math.round(total * weights[i]),
+  }));
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 }
 
 const PIE_COLORS = ['#fbbf24', '#3b82f6', '#22c55e', '#ef4444'];
@@ -32,6 +64,7 @@ export const AdminDashboard: React.FC = () => {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+<<<<<<< HEAD
   // AI feature states
   const [fraudAlerts, setFraudAlerts] = useState<{ alerts: { user_id: string; name: string; email: string; type: string; detail: string; severity: string }[]; total: number } | null>(null);
   const [revenueForecast, setRevenueForecast] = useState<{ forecast_30d: number; avg_weekly_revenue: number; trend: string; forecast_by_week: { week: string; predicted_revenue: number }[] } | null>(null);
@@ -46,10 +79,25 @@ export const AdminDashboard: React.FC = () => {
         setStats(statsData);
         setAuditLogs(logsData.logs);
       } catch { /* silent */ } finally {
+=======
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [statsData, logsData] = await Promise.all([
+          adminService.getStats(),
+          adminService.getAuditLogs({ page: 1, size: 5 }),
+        ]);
+        setStats(statsData);
+        setAuditLogs(logsData.logs);
+      } catch {
+        // Error handled by interceptor
+      } finally {
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         setIsLoading(false);
       }
     };
     fetchData();
+<<<<<<< HEAD
 
     // AI features — lazy load all admin AI
     aiService.getFraudAlerts().then(setFraudAlerts).catch(() => {});
@@ -57,6 +105,8 @@ export const AdminDashboard: React.FC = () => {
     aiService.getChurnRisk().then(setChurnRisk).catch(() => {});
     aiService.getSupplyDemandGaps().then(setSupplyGaps).catch(() => {});
     aiService.getTrendExplanation('week').then(setTrendExplain).catch(() => {});
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   }, []);
 
   if (isLoading) {
@@ -71,21 +121,38 @@ export const AdminDashboard: React.FC = () => {
     );
   }
 
+<<<<<<< HEAD
   if (!stats) return <div className="text-center text-gray-500 dark:text-gray-400">Failed to load statistics</div>;
 
   const weeklyData = generateWeeklyData(stats.total_appointments);
+=======
+  if (!stats) {
+    return <div className="text-center text-gray-500 dark:text-gray-400">Failed to load statistics</div>;
+  }
+
+  const weeklyData = generateWeeklyData(stats.total_appointments);
+
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   const pieData = [
     { name: 'Pending', value: stats.pending_appointments },
     { name: 'Confirmed', value: stats.confirmed_appointments },
     { name: 'Completed', value: stats.completed_appointments },
     { name: 'Cancelled', value: stats.cancelled_appointments },
   ];
+<<<<<<< HEAD
+=======
+
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   const barData = [
     { name: 'Pending', value: stats.pending_appointments, fill: '#fbbf24' },
     { name: 'Confirmed', value: stats.confirmed_appointments, fill: '#3b82f6' },
     { name: 'Completed', value: stats.completed_appointments, fill: '#22c55e' },
     { name: 'Cancelled', value: stats.cancelled_appointments, fill: '#ef4444' },
   ];
+<<<<<<< HEAD
+=======
+
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   const timelineSteps: TimelineStep[] = auditLogs.map((log, index) => ({
     label: log.action.replace(/_/g, ' '),
     description: `${log.resource_type}${log.resource_id ? ` #${log.resource_id.slice(0, 8)}` : ''}`,
@@ -101,7 +168,11 @@ export const AdminDashboard: React.FC = () => {
           <p className="text-gray-500 dark:text-gray-400 mt-1">Platform overview and statistics</p>
         </div>
 
+<<<<<<< HEAD
         {/* Main stats */}
+=======
+        {/* Main stats with colored left borders */}
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { icon: <Users className="w-5 h-5" />, label: 'Total Users', value: stats.total_users, color: 'border-l-blue-500', trend: `+${stats.new_users_this_week} this week`, href: '/admin/users' },
@@ -109,6 +180,7 @@ export const AdminDashboard: React.FC = () => {
             { icon: <Calendar className="w-5 h-5" />, label: 'Total Appointments', value: stats.total_appointments, color: 'border-l-green-500', trend: `${stats.appointments_today} today`, href: '/admin/appointments' },
             { icon: <FolderOpen className="w-5 h-5" />, label: 'Categories', value: stats.total_categories, color: 'border-l-amber-500', trend: null, href: '/admin/categories' },
           ].map((stat, index) => (
+<<<<<<< HEAD
             <motion.div key={stat.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
               <Link to={stat.href} className="block">
                 <div className={cn('bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 p-4 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer', stat.color)}>
@@ -123,6 +195,28 @@ export const AdminDashboard: React.FC = () => {
                   <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-2">{stat.value}</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
                 </div>
+=======
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <Link to={stat.href} className="block">
+              <div className={cn('bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 p-4 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer', stat.color)}>
+                <div className="flex items-center justify-between">
+                  <div className="text-gray-500 dark:text-gray-400">{stat.icon}</div>
+                  {stat.trend && (
+                    <span className="flex items-center gap-0.5 text-xs text-green-600 dark:text-green-400 font-medium">
+                      <TrendingUp className="w-3 h-3" />
+                      {stat.trend}
+                    </span>
+                  )}
+                </div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-2">{stat.value}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
+              </div>
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
               </Link>
             </motion.div>
           ))}
@@ -132,7 +226,13 @@ export const AdminDashboard: React.FC = () => {
           <McpInsightsPanel />
           <Card className="space-y-3">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Production Notes</h2>
+<<<<<<< HEAD
             <p className="text-sm text-gray-600 dark:text-gray-400">The MCP bridge is now discoverable, role-aware, and available as a read-only analytics and assistant layer.</p>
+=======
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              The MCP bridge is now discoverable, role-aware, and available as a read-only analytics and assistant layer.
+            </p>
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
             <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
               <li>• The assistant can ask the bridge for live providers and availability.</li>
               <li>• Admin workflows can inspect platform metrics from the same source of truth.</li>
@@ -141,6 +241,7 @@ export const AdminDashboard: React.FC = () => {
           </Card>
         </div>
 
+<<<<<<< HEAD
         {/* AI #48: Trend Explanation */}
         {trendExplain && (
           <Card className="dark:bg-gray-800 dark:border-gray-700 border-blue-200 dark:border-blue-800">
@@ -264,6 +365,8 @@ export const AdminDashboard: React.FC = () => {
           </Card>
         )}
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         {/* Secondary stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatsCard icon={<CalendarCheck className="w-5 h-5" />} label="Today's Appointments" value={stats.appointments_today} href="/admin/appointments" />
@@ -272,23 +375,53 @@ export const AdminDashboard: React.FC = () => {
           <StatsCard icon={<Clock className="w-5 h-5" />} label="Total Reviews" value={stats.total_reviews} />
         </div>
 
+<<<<<<< HEAD
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="dark:bg-gray-800 dark:border-gray-700">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Appointments This Week</h2>
+=======
+        {/* Charts row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Line chart - appointments over last 7 days */}
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+              Appointments This Week
+            </h2>
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={weeklyData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-gray-200 dark:text-gray-700" />
                   <XAxis dataKey="name" stroke="currentColor" className="text-gray-500 dark:text-gray-400" fontSize={12} />
                   <YAxis stroke="currentColor" className="text-gray-500 dark:text-gray-400" fontSize={12} />
+<<<<<<< HEAD
                   <RechartsTooltip contentStyle={{ backgroundColor: 'var(--tooltip-bg, #fff)', border: '1px solid var(--tooltip-border, #e5e7eb)', borderRadius: '8px', fontSize: '12px' }} />
                   <Line type="monotone" dataKey="appointments" stroke="#6366f1" strokeWidth={2} dot={{ fill: '#6366f1', r: 4 }} activeDot={{ r: 6 }} />
+=======
+                  <RechartsTooltip
+                    contentStyle={{
+                      backgroundColor: 'var(--tooltip-bg, #fff)',
+                      border: '1px solid var(--tooltip-border, #e5e7eb)',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="appointments"
+                    stroke="#6366f1"
+                    strokeWidth={2}
+                    dot={{ fill: '#6366f1', r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
                 </LineChart>
               </ResponsiveContainer>
             </div>
           </Card>
 
+<<<<<<< HEAD
           <Card className="dark:bg-gray-800 dark:border-gray-700">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Appointments by Status</h2>
             <div className="h-64 flex items-center justify-center">
@@ -301,6 +434,41 @@ export const AdminDashboard: React.FC = () => {
                 </PieChart>
               </ResponsiveContainer>
             </div>
+=======
+          {/* Pie chart - appointments by status */}
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+              Appointments by Status
+            </h2>
+            <div className="h-64 flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={80}
+                    paddingAngle={4}
+                    dataKey="value"
+                  >
+                    {pieData.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={PIE_COLORS[index]} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip
+                    contentStyle={{
+                      backgroundColor: 'var(--tooltip-bg, #fff)',
+                      border: '1px solid var(--tooltip-border, #e5e7eb)',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            {/* Legend */}
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
             <div className="flex flex-wrap justify-center gap-4 mt-2">
               {pieData.map((entry, index) => (
                 <div key={entry.name} className="flex items-center gap-1.5">
@@ -312,28 +480,63 @@ export const AdminDashboard: React.FC = () => {
           </Card>
         </div>
 
+<<<<<<< HEAD
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="dark:bg-gray-800 dark:border-gray-700">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Status Breakdown</h2>
+=======
+        {/* Bar chart + Activity feed */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Bar chart */}
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+              Status Breakdown
+            </h2>
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={barData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-gray-200 dark:text-gray-700" />
                   <XAxis dataKey="name" stroke="currentColor" className="text-gray-500 dark:text-gray-400" fontSize={12} />
                   <YAxis stroke="currentColor" className="text-gray-500 dark:text-gray-400" fontSize={12} />
+<<<<<<< HEAD
                   <RechartsTooltip contentStyle={{ backgroundColor: 'var(--tooltip-bg, #fff)', border: '1px solid var(--tooltip-border, #e5e7eb)', borderRadius: '8px', fontSize: '12px' }} />
                   <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                     {barData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+=======
+                  <RechartsTooltip
+                    contentStyle={{
+                      backgroundColor: 'var(--tooltip-bg, #fff)',
+                      border: '1px solid var(--tooltip-border, #e5e7eb)',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                    }}
+                  />
+                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                    {barData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </Card>
 
+<<<<<<< HEAD
           <Card className="dark:bg-gray-800 dark:border-gray-700">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Recent Activity</h2>
             {auditLogs.length === 0 ? (
               <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">No recent activity</p>
+=======
+          {/* Recent Activity with Timeline */}
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Recent Activity</h2>
+            {auditLogs.length === 0 ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">
+                No recent activity
+              </p>
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
             ) : (
               <Timeline steps={timelineSteps} />
             )}

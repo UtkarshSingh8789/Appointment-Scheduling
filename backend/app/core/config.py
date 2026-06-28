@@ -25,9 +25,13 @@ class Settings(BaseSettings):
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
 
+<<<<<<< HEAD
     # JWT — tokens are currently stored in localStorage on the frontend.
     # Security improvement: migrate to httpOnly cookies to prevent XSS theft.
     # See BUGS-AND-IMPROVEMENTS.md #25 for migration notes.
+=======
+    # JWT
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     SECRET_KEY: str = "your-super-secret-key-change-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
@@ -70,10 +74,13 @@ class Settings(BaseSettings):
     # Gemini AI (Google)
     GEMINI_API_KEY: str = ""
 
+<<<<<<< HEAD
     # Separate Gemini key for Document RAG — avoids exhausting the chatbot quota
     # If not set, falls back to GEMINI_API_KEY, then GROK_API_KEY
     GEMINI_RAG_API_KEY: str = ""
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     # Document embeddings
     DOCUMENT_EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
 

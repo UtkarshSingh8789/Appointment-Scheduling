@@ -1,6 +1,10 @@
 """Password Reset Pydantic schemas."""
 
+<<<<<<< HEAD
 from pydantic import BaseModel, EmailStr, Field, field_validator
+=======
+from pydantic import BaseModel, EmailStr, Field
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
 
 class ForgotPasswordRequest(BaseModel):
@@ -14,6 +18,7 @@ class ResetPasswordRequest(BaseModel):
 
     token: str
     new_password: str = Field(..., min_length=8, max_length=128)
+<<<<<<< HEAD
 
     @field_validator("new_password")
     @classmethod
@@ -30,3 +35,5 @@ class ResetPasswordRequest(BaseModel):
         if not any(not c.isalnum() for c in value):
             raise ValueError("Password must include at least one special character")
         return value
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202

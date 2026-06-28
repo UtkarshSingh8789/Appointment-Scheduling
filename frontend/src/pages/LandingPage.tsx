@@ -336,6 +336,7 @@ export const LandingPage: React.FC = () => {
   // (e.g. when clicking the AppointEase logo from inside the app).
   // The navbar adapts its CTAs based on auth state.
 
+<<<<<<< HEAD
   // Set meta tags for SEO and social sharing
   useEffect(() => {
     document.title = 'AppointEase — Book Appointments with Top Service Providers';
@@ -365,6 +366,8 @@ export const LandingPage: React.FC = () => {
     };
   }, []);
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   return (
     <div className="min-h-screen bg-white text-black dark:bg-neutral-950 dark:text-neutral-100 overflow-x-hidden">
       <LandingNavbar />
@@ -722,7 +725,11 @@ export const LandingPage: React.FC = () => {
               </p>
             </Reveal>
 
+<<<<<<< HEAD
             <div className="mt-14 grid grid-cols-1 lg:grid-cols-3 max-w-6xl mx-auto border-t border-l border-black dark:border-neutral-800">
+=======
+            <div className="mt-14 grid grid-cols-1 lg:grid-cols-2 max-w-4xl border-t border-l border-black dark:border-neutral-800">
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
               {/* Customer plan */}
               <Reveal className="border-b border-r border-black dark:border-neutral-800">
                 <div className="h-full p-8 lg:p-10 flex flex-col">
@@ -753,6 +760,7 @@ export const LandingPage: React.FC = () => {
                 </div>
               </Reveal>
 
+<<<<<<< HEAD
               {/* Provider plan */}
               <Reveal delay={0.1} className="border-b border-r border-black dark:border-neutral-800">
                 <div className="h-full p-8 lg:p-10 flex flex-col bg-white dark:bg-neutral-950">
@@ -766,6 +774,24 @@ export const LandingPage: React.FC = () => {
                     <span className="text-neutral-500 dark:text-neutral-400">onboarding</span>
                   </div>
                   <p className="mt-4 text-[15px] text-neutral-600 dark:text-neutral-300">
+=======
+              {/* Provider plan — inverted, most popular */}
+              <Reveal delay={0.1} className="border-b border-r border-black dark:border-neutral-800">
+                <div className="h-full p-8 lg:p-10 flex flex-col bg-black text-white dark:bg-neutral-100 dark:text-black inverted light-inverted">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-medium uppercase tracking-[0.2em] text-neutral-300 dark:text-neutral-600">
+                      Provider
+                    </p>
+                    <span className="border border-white dark:border-black px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]">
+                      Most popular
+                    </span>
+                  </div>
+                  <div className="mt-5 flex items-baseline gap-2">
+                    <span className="text-5xl font-bold tracking-tighter">Free</span>
+                    <span className="text-neutral-400 dark:text-neutral-600">onboarding</span>
+                  </div>
+                  <p className="mt-4 text-[15px] text-neutral-300 dark:text-neutral-700">
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
                     Fill out your details, upload documents, and wait for admin approval.
                   </p>
                   <ul className="mt-8 space-y-3 flex-1">
@@ -778,13 +804,19 @@ export const LandingPage: React.FC = () => {
                   </ul>
                   <Link
                     to="/register"
+<<<<<<< HEAD
                     className="mt-10 inline-flex items-center justify-center gap-2 w-full px-6 py-4 text-sm font-semibold border border-black text-black hover:bg-black hover:text-white dark:border-neutral-100 dark:text-neutral-100 dark:hover:bg-neutral-100 dark:hover:text-black transition-colors duration-200"
+=======
+                    className="mt-10 inline-flex items-center justify-center gap-2 w-full px-6 py-4 text-sm font-semibold border transition-colors duration-200"
+                    style={{ backgroundColor: '#fff', color: '#000', borderColor: '#fff' }}
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
                   >
                     Start free trial
                     <ArrowRight className="w-4 h-4" aria-hidden="true" />
                   </Link>
                 </div>
               </Reveal>
+<<<<<<< HEAD
 
               {/* Premium plan — inverted, most popular */}
               <Reveal delay={0.2} className="border-b border-r border-black dark:border-neutral-800">
@@ -827,6 +859,8 @@ export const LandingPage: React.FC = () => {
                   </Link>
                 </div>
               </Reveal>
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
             </div>
           </div>
         </section>
@@ -850,6 +884,7 @@ export const LandingPage: React.FC = () => {
                   Create free account
                   <ArrowRight className="w-5 h-5" aria-hidden="true" />
                 </Link>
+<<<<<<< HEAD
                 <Link
                   to="/calcom"
                   className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold border border-white/30 text-white hover:bg-white/10 transition-colors duration-200"
@@ -857,6 +892,8 @@ export const LandingPage: React.FC = () => {
                   Explore Cal.com Hub
                   <ArrowUpRight className="w-5 h-5" aria-hidden="true" />
                 </Link>
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
               </div>
             </Reveal>
           </div>

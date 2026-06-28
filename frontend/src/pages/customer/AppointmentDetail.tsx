@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+<<<<<<< HEAD
 import { ArrowLeft, Calendar, Clock, MapPin, FileText, MessageSquare, Send, Brain, ListChecks } from 'lucide-react';
 import { useAppointmentStore } from '@/store/appointmentStore';
 import { appointmentService } from '@/services/appointmentService';
 import { reviewService } from '@/services/reviewService';
 import { aiService } from '@/services/aiService';
+=======
+import { ArrowLeft, Calendar, Clock, MapPin, FileText, MessageSquare, Send } from 'lucide-react';
+import { useAppointmentStore } from '@/store/appointmentStore';
+import { appointmentService } from '@/services/appointmentService';
+import { reviewService } from '@/services/reviewService';
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -33,10 +40,13 @@ export const AppointmentDetail: React.FC = () => {
   const [comments, setComments] = useState<AppointmentComment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+<<<<<<< HEAD
   // AI states
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [followupSuggestions, setFollowupSuggestions] = useState<string[]>([]);
   const [rescheduleSuggestions, setRescheduleSuggestions] = useState<{ date: string; start_time: string; reason: string; confidence: number }[]>([]);
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
   useEffect(() => {
     if (id) {
@@ -46,6 +56,7 @@ export const AppointmentDetail: React.FC = () => {
     }
   }, [id, fetchAppointment]);
 
+<<<<<<< HEAD
   // Load AI features after appointment is fetched
   useEffect(() => {
     if (!id || !selectedAppointment) return;
@@ -58,6 +69,8 @@ export const AppointmentDetail: React.FC = () => {
     }
   }, [id, selectedAppointment]);
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   const loadComments = async (appointmentId: string) => {
     try {
       const data = await appointmentService.getComments(appointmentId);
@@ -137,6 +150,7 @@ export const AppointmentDetail: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Appointment Details</h1>
+<<<<<<< HEAD
           <div className="flex items-center gap-2 mt-2 flex-wrap">
             <Badge status={appointment.status} />
             {/* AI Feature #1: No-show risk badge */}
@@ -152,6 +166,9 @@ export const AppointmentDetail: React.FC = () => {
               </span>
             )}
           </div>
+=======
+          <Badge status={appointment.status} className="mt-2" />
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         </div>
         <div className="flex gap-2">
           {canReview && (
@@ -340,6 +357,7 @@ export const AppointmentDetail: React.FC = () => {
         </div>
       </Card>
 
+<<<<<<< HEAD
       {/* AI #10: Appointment Summary */}
       {appointment.status === 'completed' && aiSummary && (
         <Card className="dark:bg-gray-800 dark:border-gray-700 border-primary-200 dark:border-primary-800">
@@ -395,6 +413,8 @@ export const AppointmentDetail: React.FC = () => {
         </Card>
       )}
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
       {/* Cancel modal */}
       <Modal
         isOpen={showCancelModal}

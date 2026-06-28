@@ -9,14 +9,21 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.core.database import create_tables
+<<<<<<< HEAD
 from app.core.security import hash_password
 from app.middleware.error_handler import ErrorHandlerMiddleware
 from app.middleware.rate_limiter import RateLimitMiddleware
+=======
+from app.middleware.error_handler import ErrorHandlerMiddleware
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 from app.routers import (
     achievements,
     admin,
     ai_chat,
+<<<<<<< HEAD
     ai_features,
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     appointments,
     auth,
     availability,
@@ -24,9 +31,15 @@ from app.routers import (
     chat,
     coupons,
     favorites,
+<<<<<<< HEAD
     calcom,
     invoices,
     loyalty,
+=======
+    invoices,
+    loyalty,
+    mcp_tools,
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     notifications,
     payments,
     providers,
@@ -34,12 +47,16 @@ from app.routers import (
     reviews,
     users,
     waitlist,
+<<<<<<< HEAD
     premium,
     integrations,
 )
 from sqlalchemy import select
 from app.core.database import async_session_maker
 from app.models.user import User, UserRole
+=======
+)
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
 # Configure logging
 logging.basicConfig(
@@ -49,12 +66,15 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+<<<<<<< HEAD
 try:
     from app.routers import mcp_tools
 except ModuleNotFoundError as exc:  # pragma: no cover - optional local dependency
     mcp_tools = None
     logger.warning("MCP tools router disabled: %s", exc)
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 # Create FastAPI app
 app = FastAPI(
     title=settings.APP_NAME,
@@ -70,6 +90,11 @@ app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
 
 # Add middleware
 app.add_middleware(ErrorHandlerMiddleware)
+<<<<<<< HEAD
+=======
+
+from app.middleware.rate_limiter import RateLimitMiddleware
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 app.add_middleware(RateLimitMiddleware)
 
 app.add_middleware(
@@ -93,11 +118,16 @@ app.include_router(favorites.router)
 app.include_router(admin.router)
 app.include_router(waitlist.router)
 app.include_router(loyalty.router)
+<<<<<<< HEAD
+=======
+app.include_router(mcp_tools.router)
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 app.include_router(invoices.router)
 app.include_router(chat.router)
 app.include_router(coupons.router)
 app.include_router(achievements.router)
 app.include_router(ai_chat.router)
+<<<<<<< HEAD
 app.include_router(ai_features.router)
 app.include_router(payments.router)
 app.include_router(reminders.router)
@@ -206,11 +236,25 @@ async def _run_demo_seed():
             logger.warning("seed.py not found — skipping AI seed.")
     except Exception as e:
         logger.warning(f"AI seed skipped due to error: {e}")
+=======
+app.include_router(payments.router)
+app.include_router(reminders.router)
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
 
 @app.on_event("startup")
 async def startup_event():
+<<<<<<< HEAD
     await _startup()
+=======
+    """Initialize database tables and Redis on startup."""
+    logger.info("Starting up Appointment Scheduling Platform...")
+    await create_tables()
+    # Initialize Redis connection
+    from app.core.redis import get_redis
+    await get_redis()
+    logger.info("Database tables created/verified.")
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
 
 @app.get("/", tags=["Health"])
@@ -227,9 +271,12 @@ async def root():
 async def health_check():
     """Health check endpoint."""
     return {"status": "ok"}
+<<<<<<< HEAD
 
 
 @app.get("/ping", tags=["Health"])
 async def ping():
     """Lightweight keep-alive endpoint to prevent cold starts."""
     return {"pong": True}
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202

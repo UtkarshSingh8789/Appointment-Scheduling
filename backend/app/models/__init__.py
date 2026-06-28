@@ -3,7 +3,10 @@
 from app.models.user import User, UserRole
 from app.models.service_category import ServiceCategory
 from app.models.provider import ServiceProvider
+<<<<<<< HEAD
 from app.models.integration import Integration
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 from app.models.availability import Availability
 from app.models.appointment import Appointment, AppointmentStatus
 from app.models.notification import Notification, NotificationType

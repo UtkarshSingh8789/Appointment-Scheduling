@@ -182,6 +182,7 @@ async def delete_exception(
     provider_id = await _get_provider_id(current_user, db)
     service = AvailabilityService(db)
     await service.delete_exception(exception_id, provider_id)
+<<<<<<< HEAD
 
 
 # ── AI Feature #2: Smart Slot Suggestions ─────────────────────────────
@@ -229,3 +230,5 @@ async def get_smart_slot_suggestions(
         "date": str(date),
         "suggestions": suggestions,
     }
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202

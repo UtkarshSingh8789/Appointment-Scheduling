@@ -3,10 +3,13 @@ import type { User, LoginCredentials, RegisterData } from '@/types';
 import { authService } from '@/services/authService';
 import toast from 'react-hot-toast';
 
+<<<<<<< HEAD
 let initializePromise: Promise<void> | null = null;
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
@@ -27,6 +30,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isInitialized: false,
 
   initialize: async () => {
+<<<<<<< HEAD
     if (initializePromise) return initializePromise;
 
     initializePromise = (async () => {
@@ -78,6 +82,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     });
 
     return initializePromise;
+=======
+    const token = localStorage.getItem('access_token');
+    if (token && !get().user) {
+      set({ isLoading: true });
+      try {
+        const user = await authService.getMe();
+        set({ user, isAuthenticated: true, isLoading: false, isInitialized: true });
+      } catch {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        set({ user: null, isAuthenticated: false, isLoading: false, isInitialized: true });
+      }
+    } else {
+      set({ isInitialized: true });
+    }
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   },
 
   login: async (credentials: LoginCredentials) => {
@@ -121,7 +141,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+<<<<<<< HEAD
     set({ user: null, isAuthenticated: false, isLoading: false, isInitialized: true });
+=======
+    set({ user: null, isAuthenticated: false });
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     toast.success('Logged out successfully');
   },
 

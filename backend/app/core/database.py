@@ -56,7 +56,10 @@ async def create_tables():
     async with engine.begin() as conn:
         await _ensure_appointment_financial_columns(conn)
         await _ensure_super_admin_column(conn)
+<<<<<<< HEAD
         await _ensure_premium_column(conn)
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
 
 async def _ensure_pgvector_extension(conn) -> None:
@@ -126,6 +129,7 @@ async def _ensure_super_admin_column(conn) -> None:
     await conn.exec_driver_sql(
         "UPDATE users SET is_super_admin = TRUE WHERE email = 'admin@appointly.com'"
     )
+<<<<<<< HEAD
 
 
 async def _ensure_premium_column(conn) -> None:
@@ -137,3 +141,5 @@ async def _ensure_premium_column(conn) -> None:
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_premium BOOLEAN NOT NULL DEFAULT FALSE"
     )
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202

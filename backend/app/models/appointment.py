@@ -56,10 +56,13 @@ class Appointment(Base):
     )
     notes: Mapped[str] = mapped_column(Text, nullable=True)
     cancellation_reason: Mapped[str] = mapped_column(String(500), nullable=True)
+<<<<<<< HEAD
     # AI feature #1: No-show risk score (low/medium/high)
     no_show_risk: Mapped[str] = mapped_column(String(10), nullable=True, default=None)
     # AI feature #4: Post-appointment AI follow-up summary
     ai_summary: Mapped[str] = mapped_column(Text, nullable=True, default=None)
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
@@ -82,6 +85,7 @@ class Appointment(Base):
         Index("ix_appointments_provider_date", "provider_id", "appointment_date"),
         Index("ix_appointments_customer_status", "customer_id", "status"),
         Index("ix_appointments_status", "status"),
+<<<<<<< HEAD
         # DB-level unique constraint prevents double-booking races that bypass
         # application-layer checks (concurrent requests on the same slot).
         # UniqueConstraint on (provider_id, appointment_date, start_time) for
@@ -93,6 +97,8 @@ class Appointment(Base):
             "appointment_date",
             "start_time",
         ),
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     )
 
     def __repr__(self) -> str:

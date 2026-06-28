@@ -3,7 +3,11 @@
 import uuid
 from datetime import datetime, timezone
 
+<<<<<<< HEAD
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+=======
+from sqlalchemy import DateTime, ForeignKey, Integer, Text, UniqueConstraint
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -40,9 +44,12 @@ class Review(Base):
     )
     rating: Mapped[int] = mapped_column(Integer, nullable=False)
     comment: Mapped[str] = mapped_column(Text, nullable=True)
+<<<<<<< HEAD
     # AI feature #6: Sentiment analysis fields
     sentiment: Mapped[str] = mapped_column(String(10), nullable=True, default=None)  # positive/neutral/negative
     sentiment_topics: Mapped[str] = mapped_column(Text, nullable=True, default=None)  # JSON list of topics
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),

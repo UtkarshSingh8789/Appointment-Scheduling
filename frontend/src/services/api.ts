@@ -1,7 +1,11 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import toast from 'react-hot-toast';
 
+<<<<<<< HEAD
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+=======
+const API_BASE_URL = '/api';
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
 /** Axios instance configured for the appointment API */
 const api = axios.create({

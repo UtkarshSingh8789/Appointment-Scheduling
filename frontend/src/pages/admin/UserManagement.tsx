@@ -1,5 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
+<<<<<<< HEAD
 import { UserCheck, UserX, Shield, ShieldCheck, ShieldOff } from 'lucide-react';
+=======
+import { UserCheck, UserX, Shield, ShieldCheck } from 'lucide-react';
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 import { Link } from 'react-router-dom';
 import { adminService } from '@/services/adminService';
 import { Card } from '@/components/ui/Card';
@@ -26,7 +30,11 @@ export const UserManagement: React.FC = () => {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [statusTarget, setStatusTarget] = useState<User | null>(null);
+<<<<<<< HEAD
   const [targetAction, setTargetAction] = useState<'activate' | 'deactivate' | 'approve' | 'reject' | null>(null);
+=======
+  const [targetAction, setTargetAction] = useState<'activate' | 'deactivate' | 'approve' | null>(null);
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
   const getUserStatus = (user: User) => user.provider_status ?? (user.is_active ? 'active' : 'deactive');
 
@@ -74,15 +82,26 @@ export const UserManagement: React.FC = () => {
     fetchUsers(1);
   }, [fetchUsers]);
 
+<<<<<<< HEAD
   const handleStatusAction = async (user: User, action: 'activate' | 'deactivate' | 'approve' | 'reject') => {
     try {
       if (action === 'approve' || action === 'reject') {
+=======
+  const handleStatusAction = async (user: User, action: 'activate' | 'deactivate' | 'approve') => {
+    try {
+      if (action === 'approve') {
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         if (!user.provider_id) {
           toast.error('Provider profile is missing');
           return;
         }
+<<<<<<< HEAD
         await adminService.updateProviderApproval(user.provider_id, { action });
         toast.success(action === 'approve' ? 'Provider approved' : 'Provider rejected');
+=======
+        await adminService.updateProviderApproval(user.provider_id, { action: 'approve' });
+        toast.success('Provider approved');
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
       } else {
         await adminService.updateUserStatus(user.id, action === 'activate');
         toast.success(`User ${action === 'activate' ? 'activated' : 'deactivated'}`);
@@ -105,8 +124,13 @@ export const UserManagement: React.FC = () => {
     <PageTransition>
     <div className="space-y-6">
       <div>
+<<<<<<< HEAD
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">User Management</h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1">{total} users registered on the platform</p>
+=======
+        <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
+        <p className="text-gray-500 mt-1">{total} users registered on the platform</p>
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
       </div>
 
       {/* Filters */}
@@ -164,14 +188,23 @@ export const UserManagement: React.FC = () => {
                           <Link to={`/admin/users/${user.id}`} className="flex items-center gap-3 group">
                             <Avatar name={user.full_name} src={getProviderImage(user.id)} size="sm" />
                             <div>
+<<<<<<< HEAD
                               <p className="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:underline">{user.full_name}</p>
                               <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
+=======
+                              <p className="text-sm font-medium text-gray-900 group-hover:underline">{user.full_name}</p>
+                              <p className="text-xs text-gray-500">{user.email}</p>
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
                             </div>
                           </Link>
                         </div>
                       </td>
                       <td className="px-6 py-4">
+<<<<<<< HEAD
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+=======
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
                           <Shield className="w-3 h-3" />
                           {capitalize(user.role)}
                         </span>
@@ -185,6 +218,7 @@ export const UserManagement: React.FC = () => {
                           {getStatusLabel(user)}
                         </span>
                       </td>
+<<<<<<< HEAD
                       <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                         {formatDate(user.created_at)}
                       </td>
@@ -227,6 +261,35 @@ export const UserManagement: React.FC = () => {
                             {getActionForUser(user) === 'deactivate' ? 'Deactivate' : 'Activate'}
                           </Button>
                         )}
+=======
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {formatDate(user.created_at)}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <Button
+                          size="sm"
+                          variant={getActionForUser(user) === 'deactivate' ? 'danger' : 'secondary'}
+                          leftIcon={
+                            getActionForUser(user) === 'approve' ? (
+                              <ShieldCheck className="w-3.5 h-3.5" />
+                            ) : getActionForUser(user) === 'deactivate' ? (
+                              <UserX className="w-3.5 h-3.5" />
+                            ) : (
+                              <UserCheck className="w-3.5 h-3.5" />
+                            )
+                          }
+                          onClick={() => {
+                            setStatusTarget(user);
+                            setTargetAction(getActionForUser(user));
+                          }}
+                        >
+                          {getActionForUser(user) === 'approve'
+                            ? 'Approve'
+                            : getActionForUser(user) === 'deactivate'
+                              ? 'Deactivate'
+                              : 'Activate'}
+                        </Button>
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
                       </td>
                     </tr>
                   ))}
@@ -249,24 +312,37 @@ export const UserManagement: React.FC = () => {
         title={
           targetAction === 'approve'
             ? 'Approve provider?'
+<<<<<<< HEAD
             : targetAction === 'reject'
               ? 'Reject provider?'
               : targetAction === 'deactivate'
                 ? 'Deactivate user?'
                 : 'Activate user?'
+=======
+            : targetAction === 'deactivate'
+              ? 'Deactivate user?'
+              : 'Activate user?'
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         }
         message={
           targetAction === 'approve'
             ? `${statusTarget?.full_name || 'This provider'} will be approved and can access the provider panel.`
+<<<<<<< HEAD
             : targetAction === 'reject'
               ? `${statusTarget?.full_name || 'This provider'} will be rejected and will not gain provider access.`
               : targetAction === 'deactivate'
                 ? `${statusTarget?.full_name || 'This user'} will no longer be able to access the platform until reactivated.`
                 : `${statusTarget?.full_name || 'This user'} will regain access to the platform.`
+=======
+            : targetAction === 'deactivate'
+              ? `${statusTarget?.full_name || 'This user'} will no longer be able to access the platform until reactivated.`
+              : `${statusTarget?.full_name || 'This user'} will regain access to the platform.`
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         }
         confirmLabel={
           targetAction === 'approve'
             ? 'Approve'
+<<<<<<< HEAD
             : targetAction === 'reject'
               ? 'Reject'
               : targetAction === 'deactivate'
@@ -274,6 +350,13 @@ export const UserManagement: React.FC = () => {
                 : 'Activate'
         }
         variant={targetAction === 'deactivate' || targetAction === 'reject' ? 'danger' : 'warning'}
+=======
+            : targetAction === 'deactivate'
+              ? 'Deactivate'
+              : 'Activate'
+        }
+        variant={targetAction === 'deactivate' ? 'danger' : 'warning'}
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
       />
     </div>
     </PageTransition>

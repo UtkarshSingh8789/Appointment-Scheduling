@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+<<<<<<< HEAD
 import { Mail, Phone, Shield, UserCheck, Calendar, MapPin, Briefcase, Star, Brain } from 'lucide-react';
 import { adminService } from '@/services/adminService';
 import { aiService } from '@/services/aiService';
+=======
+import { Mail, Phone, Shield, UserCheck, Calendar, MapPin, Briefcase, Star } from 'lucide-react';
+import { adminService } from '@/services/adminService';
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 import { Card } from '@/components/ui/Card';
 import { Avatar } from '@/components/ui/Avatar';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -17,7 +22,10 @@ export const UserDetail: React.FC = () => {
     provider?: Awaited<ReturnType<typeof adminService.getUser>>['provider'];
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+<<<<<<< HEAD
   const [ltv, setLtv] = useState<{ predicted_ltv_6m: number; total_spent_to_date: number; tier: string; recommendation: string; total_appointments: number } | null>(null);
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
   useEffect(() => {
     const load = async () => {
@@ -26,9 +34,12 @@ export const UserDetail: React.FC = () => {
       try {
         const data = await adminService.getUser(id);
         setUserDetail(data);
+<<<<<<< HEAD
         if (data.user.role === 'customer') {
           aiService.getCustomerLifetimeValue(id).then(setLtv).catch(() => {});
         }
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
       } catch {
         // Handled by interceptor
       } finally {
@@ -139,6 +150,7 @@ export const UserDetail: React.FC = () => {
           </div>
         </Card>
 
+<<<<<<< HEAD
         {/* AI #50: Customer Lifetime Value */}
         {ltv && (
           <Card className="dark:bg-gray-800 dark:border-gray-700 border-green-200 dark:border-green-800">
@@ -169,6 +181,8 @@ export const UserDetail: React.FC = () => {
           </Card>
         )}
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         {provider && (
           <Card className="dark:bg-gray-800 dark:border-gray-700">
             <div className="flex items-center gap-2 mb-4">

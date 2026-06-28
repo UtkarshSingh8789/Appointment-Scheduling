@@ -21,9 +21,14 @@ from app.models import ProviderDocument, ProviderDocumentChunk, ServiceProvider
 from app.models.provider_document import EMBEDDING_DIMENSIONS, ENABLE_PGVECTOR, Vector
 from app.services.provider_application_service import BASE_DIR, get_application
 
+<<<<<<< HEAD
 logger = logging.getLogger(__name__)
 
 _EMBEDDER = None
+=======
+_EMBEDDER = None
+logger = logging.getLogger(__name__)
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
 
 class ProviderDocumentRAGService:
@@ -33,22 +38,39 @@ class ProviderDocumentRAGService:
         self.db = db
 
     async def reindex_provider(self, provider_id: UUID) -> dict[str, Any]:
+<<<<<<< HEAD
         """Rebuild the document index for one provider application.
 
         Uses a write-then-swap approach: new chunks are inserted first,
         old ones deleted only if new indexing succeeded — preventing the
         provider from having zero chunks if indexing fails mid-way.
         """
+=======
+        """Rebuild the document index for one provider application."""
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         try:
             provider = await self._get_provider(provider_id)
             application = get_application(str(provider_id)) or {}
             documents = application.get("documents") or []
 
+<<<<<<< HEAD
             indexed_documents = 0
             indexed_chunks = 0
             skipped_documents: list[dict[str, str]] = []
             new_docs: list = []
             new_chunks: list = []
+=======
+            await self.db.execute(
+                delete(ProviderDocumentChunk).where(ProviderDocumentChunk.provider_id == provider_id)
+            )
+            await self.db.execute(
+                delete(ProviderDocument).where(ProviderDocument.provider_id == provider_id)
+            )
+
+            indexed_documents = 0
+            indexed_chunks = 0
+            skipped_documents: list[dict[str, str]] = []
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
             for doc in documents:
                 text = self._extract_document_text(doc)
@@ -56,7 +78,11 @@ class ProviderDocumentRAGService:
                     skipped_documents.append(
                         {
                             "name": doc.get("name") or "Document",
+<<<<<<< HEAD
                             "reason": "No readable text could be extracted.",
+=======
+                            "reason": "No readable text could be extracted. OCR/PDF text extraction may be needed.",
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
                         }
                     )
                     continue
@@ -69,15 +95,36 @@ class ProviderDocumentRAGService:
                     extracted_text=text,
                     status="indexed",
                 )
+<<<<<<< HEAD
                 new_docs.append(document)
 
                 for index, chunk_text in enumerate(_chunk_text(text), start=1):
                     embedding = _embed_text(chunk_text)
                     new_chunks.append((document, index, chunk_text, embedding))
+=======
+                self.db.add(document)
+                await self.db.flush()
+
+                for index, chunk_text in enumerate(_chunk_text(text), start=1):
+                    embedding = _embed_text(chunk_text)
+                    chunk_kwargs = dict(
+                        document_id=document.id,
+                        provider_id=provider_id,
+                        chunk_index=index,
+                        page_number=None,
+                        chunk_text=chunk_text,
+                        embedding_json=json.dumps(embedding),
+                    )
+                    if self._can_use_vector_db():
+                        chunk_kwargs["embedding"] = embedding
+                    chunk = ProviderDocumentChunk(**chunk_kwargs)
+                    self.db.add(chunk)
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
                     indexed_chunks += 1
 
                 indexed_documents += 1
 
+<<<<<<< HEAD
             # Only delete old data once we know we have new data to replace it
             if indexed_documents > 0 or skipped_documents:
                 await self.db.execute(
@@ -112,6 +159,8 @@ class ProviderDocumentRAGService:
                 chunk = ProviderDocumentChunk(**chunk_kwargs)
                 self.db.add(chunk)
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
             await self.db.flush()
             return {
                 "provider_id": str(provider.id),
@@ -309,13 +358,21 @@ CONTEXT:
 {context}
 """.strip()
 
+<<<<<<< HEAD
         if settings.GEMINI_RAG_API_KEY or settings.GEMINI_API_KEY:
             rag_key = settings.GEMINI_RAG_API_KEY or settings.GEMINI_API_KEY
+=======
+        if settings.GEMINI_API_KEY:
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
             try:
                 async with httpx.AsyncClient(timeout=30.0) as client:
                     response = await client.post(
                         "https://generativelanguage.googleapis.com/v1beta/models/"
+<<<<<<< HEAD
                         f"gemini-2.5-flash:generateContent?key={rag_key}",
+=======
+                        f"gemini-2.5-flash:generateContent?key={settings.GEMINI_API_KEY}",
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
                         headers={"Content-Type": "application/json"},
                         json={
                             "contents": [{"role": "user", "parts": [{"text": prompt}]}],
@@ -715,6 +772,7 @@ def _ocr_image(file_path: Path) -> str:
 
 
 def _chunk_text(text: str, max_chars: int = 1100, overlap: int = 180) -> list[str]:
+<<<<<<< HEAD
     """
     Bug #22 fix — paragraph-aware chunking strategy.
 
@@ -764,6 +822,20 @@ def _chunk_text(text: str, max_chars: int = 1100, overlap: int = 180) -> list[st
         chunks.append(current)
 
     return [c for c in chunks if c]
+=======
+    cleaned = re.sub(r"\s+", " ", text).strip()
+    if not cleaned:
+        return []
+    chunks = []
+    start = 0
+    while start < len(cleaned):
+        end = min(start + max_chars, len(cleaned))
+        chunks.append(cleaned[start:end].strip())
+        if end >= len(cleaned):
+            break
+        start = max(end - overlap, start + 1)
+    return chunks
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
 
 def _embed_text(text: str) -> list[float]:

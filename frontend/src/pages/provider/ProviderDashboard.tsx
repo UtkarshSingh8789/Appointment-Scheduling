@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+<<<<<<< HEAD
 import { Calendar, CheckCircle, Clock, XCircle, Star, TrendingUp } from 'lucide-react';
 import { providerService } from '@/services/providerService';
 import { appointmentService } from '@/services/appointmentService';
 import { useAuthStore } from '@/store/authStore';
 import { aiService } from '@/services/aiService';
+=======
+import { Calendar, CheckCircle, Clock, XCircle, Star } from 'lucide-react';
+import { providerService } from '@/services/providerService';
+import { appointmentService } from '@/services/appointmentService';
+import { useAuthStore } from '@/store/authStore';
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 import { StatsCard } from '@/components/ui/StatsCard';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -14,6 +21,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { McpInsightsPanel } from '@/components/mcp/McpInsightsPanel';
 import { formatDate, formatTime, getRelativeDateLabel } from '@/utils';
+<<<<<<< HEAD
 import api from '@/services/api';
 import type { ProviderStats, Appointment } from '@/types';
 
@@ -30,6 +38,10 @@ interface PricingInsights {
   suggestion: string;
 }
 
+=======
+import type { ProviderStats, Appointment } from '@/types';
+
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 export const ProviderDashboard: React.FC = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
@@ -37,9 +49,12 @@ export const ProviderDashboard: React.FC = () => {
   const [todayAppointments, setTodayAppointments] = useState<Appointment[]>([]);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+<<<<<<< HEAD
   const [pricingInsights, setPricingInsights] = useState<PricingInsights | null>(null);
   const [pricingLoading, setPricingLoading] = useState(false);
   const [earningsInsights, setEarningsInsights] = useState<{ insights: string[]; best_day?: string; best_hour?: string; total_completed?: number } | null>(null);
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,6 +72,7 @@ export const ProviderDashboard: React.FC = () => {
       }
     };
     fetchData();
+<<<<<<< HEAD
 
     // AI #7: pricing insights
     const loadPricing = async () => {
@@ -74,6 +90,8 @@ export const ProviderDashboard: React.FC = () => {
     aiService.getEarningsInsights().then((d: { insights: string[]; best_day?: string; best_hour?: string }) => {
       if (d?.insights?.length) setEarningsInsights(d);
     }).catch(() => {});
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   }, []);
 
   if (isLoading) {
@@ -196,6 +214,7 @@ export const ProviderDashboard: React.FC = () => {
         </Card>
       )}
 
+<<<<<<< HEAD
       {/* AI #49: Earnings Insights */}
       {earningsInsights && (
         <Card className="dark:bg-gray-800 dark:border-gray-700">
@@ -289,6 +308,8 @@ export const ProviderDashboard: React.FC = () => {
         </Card>
       )}
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
       <Modal
         isOpen={!!selectedAppointment}
         onClose={() => setSelectedAppointment(null)}

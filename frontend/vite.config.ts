@@ -9,6 +9,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+<<<<<<< HEAD
   build: {
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
@@ -24,11 +25,17 @@ export default defineConfig({
       },
     },
   },
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   server: {
     port: 3000,
     proxy: {
       '/api': {
+<<<<<<< HEAD
         target: 'http://127.0.0.1:8000',
+=======
+        target: 'http://localhost:8000',
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         changeOrigin: true,
       },
     },

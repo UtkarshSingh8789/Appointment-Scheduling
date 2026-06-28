@@ -47,6 +47,7 @@ class ReviewService:
                 detail="Can only review completed appointments",
             )
 
+<<<<<<< HEAD
         # Validate minimum comment length
         if data.comment and len(data.comment.strip()) < 5:
             raise HTTPException(
@@ -54,6 +55,8 @@ class ReviewService:
                 detail="Review comment must be at least 5 characters.",
             )
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         # Check for existing review
         existing_result = await self.db.execute(
             select(Review).where(Review.appointment_id == data.appointment_id)
@@ -76,6 +79,7 @@ class ReviewService:
         self.db.add(review)
         await self.db.flush()
 
+<<<<<<< HEAD
         # AI Feature #6: Run sentiment analysis on the new review
         try:
             from app.services.sentiment_service import analyze_and_persist
@@ -83,6 +87,8 @@ class ReviewService:
         except Exception:
             pass  # Sentiment failure must not block review creation
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         # Recalculate provider rating
         await self._recalculate_provider_rating(appointment.provider_id)
 

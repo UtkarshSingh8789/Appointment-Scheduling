@@ -8,6 +8,10 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+<<<<<<< HEAD
+=======
+    tesseract-ocr \
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
@@ -34,7 +38,11 @@ RUN adduser --disabled-password --gecos "" appuser && \
 EXPOSE 8000
 
 # Health check
+<<<<<<< HEAD
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
+=======
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
 # Run the application

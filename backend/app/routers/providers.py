@@ -361,6 +361,7 @@ async def update_provider(
     service = ProviderService(db)
     provider = await service.update_provider(current_user, data)
     return provider
+<<<<<<< HEAD
 
 
 # ── AI Feature #3: Semantic Provider Search ───────────────────────────
@@ -439,3 +440,5 @@ async def get_my_pricing_insights(
             detail="Provider profile not found",
         )
     return await get_pricing_insights(db, provider.id)
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202

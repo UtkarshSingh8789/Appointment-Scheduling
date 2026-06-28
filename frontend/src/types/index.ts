@@ -14,7 +14,10 @@ export interface User {
   avatar_url: string | null;
   is_active: boolean;
   is_super_admin?: boolean;
+<<<<<<< HEAD
   is_premium?: boolean;
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   provider_id?: string | null;
   provider_is_verified?: boolean | null;
   provider_status?: 'active' | 'pending' | 'deactive' | null;
@@ -64,10 +67,13 @@ export interface Appointment {
   status: AppointmentStatus;
   notes: string | null;
   cancellation_reason: string | null;
+<<<<<<< HEAD
   // AI Feature #1: no-show risk score
   no_show_risk?: 'low' | 'medium' | 'high' | null;
   // AI Feature #4: post-appointment AI summary (JSON string)
   ai_summary?: string | null;
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   created_at: string;
   updated_at: string;
   customer: User | null;
@@ -301,9 +307,12 @@ export interface Review {
   provider_id: string;
   rating: number;
   comment: string | null;
+<<<<<<< HEAD
   // AI Feature #6: sentiment analysis fields
   sentiment?: 'positive' | 'neutral' | 'negative' | null;
   sentiment_topics?: string | null; // JSON array string
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   created_at: string;
   customer: User | null;
 }

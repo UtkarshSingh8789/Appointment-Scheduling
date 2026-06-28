@@ -1,9 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
+<<<<<<< HEAD
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Mail, Lock, Calendar, Eye, EyeOff, CheckCircle, Shield, UserCheck, Briefcase } from 'lucide-react';
+=======
+import { Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Mail, Lock, Calendar, Eye, EyeOff, CheckCircle } from 'lucide-react';
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/services/api';
@@ -20,6 +28,7 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
+<<<<<<< HEAD
 const DEMO_ACCOUNTS: { role: string; email: string; password: string; icon: React.ReactNode; color: string }[] = [
   { role: 'Customer', email: 'priya.sharma@email.com', password: 'Demo@1234', icon: <UserCheck className="w-3.5 h-3.5" />, color: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900' },
   { role: 'Provider', email: 'dr.arun.kapoor@email.com', password: 'Demo@1234', icon: <Briefcase className="w-3.5 h-3.5" />, color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900' },
@@ -29,6 +38,10 @@ const DEMO_ACCOUNTS: { role: string; email: string; password: string; icon: Reac
 export const LoginPage: React.FC = () => {
   const { login, isLoading } = useAuthStore();
   const navigate = useNavigate();
+=======
+export const LoginPage: React.FC = () => {
+  const { login, isLoading } = useAuthStore();
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [shakeForm, setShakeForm] = useState(false);
@@ -37,7 +50,10 @@ export const LoginPage: React.FC = () => {
   const {
     register,
     handleSubmit,
+<<<<<<< HEAD
     setValue,
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -71,6 +87,7 @@ export const LoginPage: React.FC = () => {
         provider: '/provider/dashboard',
         admin: '/admin/dashboard',
       };
+<<<<<<< HEAD
       navigate(dashboardPaths[loggedInUser.role], { replace: true });
     } catch {
       setShakeForm(true);
@@ -90,6 +107,15 @@ export const LoginPage: React.FC = () => {
       };
       navigate(dashboardPaths[loggedInUser.role], { replace: true });
     } catch {
+=======
+      // Force full page navigation — replace + reload fallback
+      const target = dashboardPaths[loggedInUser.role];
+      window.location.href = target;
+      // Fallback: if href assignment doesn't trigger navigation (same-origin SPA), force reload
+      setTimeout(() => { window.location.reload(); }, 100);
+    } catch {
+      // Trigger shake animation on error
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
       setShakeForm(true);
       setTimeout(() => setShakeForm(false), 600);
     }
@@ -314,6 +340,7 @@ export const LoginPage: React.FC = () => {
               Create one
             </Link>
           </p>
+<<<<<<< HEAD
 
           {/* Demo Credentials Quick Login */}
           <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
@@ -338,6 +365,8 @@ export const LoginPage: React.FC = () => {
               ))}
             </div>
           </div>
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         </div>
       </div>
     </div>

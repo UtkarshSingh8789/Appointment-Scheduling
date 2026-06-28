@@ -9,6 +9,7 @@ interface ReviewCardProps {
   review: Review;
 }
 
+<<<<<<< HEAD
 // AI Feature #6 helper — sentiment colour and label
 function SentimentBadge({ sentiment }: { sentiment?: string | null }) {
   if (!sentiment) return null;
@@ -38,6 +39,10 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
     topics = [];
   }
 
+=======
+/** Displays a single review with customer info, rating, and comment */
+export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   return (
     <div className="p-4 border border-gray-100 dark:border-gray-700 rounded-lg">
       <div className="flex items-start gap-3">
@@ -51,6 +56,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
             <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
               {review.customer?.full_name || 'Anonymous'}
             </p>
+<<<<<<< HEAD
             <div className="flex items-center gap-2 flex-shrink-0">
               {/* AI Feature #6: Sentiment badge */}
               <SentimentBadge sentiment={review.sentiment} />
@@ -58,6 +64,11 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
                 {formatDate(review.created_at)}
               </span>
             </div>
+=======
+            <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
+              {formatDate(review.created_at)}
+            </span>
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
           </div>
           <div className="mt-1">
             <StarRating value={review.rating} readonly size="sm" />
@@ -67,6 +78,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
               {review.comment}
             </p>
           )}
+<<<<<<< HEAD
           {/* AI Feature #6: Topic tags */}
           {topics.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1">
@@ -80,6 +92,8 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
               ))}
             </div>
           )}
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         </div>
       </div>
     </div>

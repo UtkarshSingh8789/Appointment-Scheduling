@@ -24,6 +24,7 @@ import { loyaltyService } from '@/services/loyaltyService';
 import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
 
+<<<<<<< HEAD
 // Bug #43 fix: typed Razorpay window accessor instead of (window as any).Razorpay
 declare global {
   interface Window {
@@ -35,6 +36,8 @@ declare global {
 }
 const getWindowRazorpay = () => window.Razorpay;
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 const STEPS = ['Date', 'Time', 'Details', 'Confirm'];
 
 const getDurationMinutes = (startTime: string | null, endTime?: string | null) => {
@@ -65,11 +68,14 @@ export const BookAppointment: React.FC = () => {
   const [loyaltyPoints, setLoyaltyPoints] = useState(0);
   const [pointsToRedeem, setPointsToRedeem] = useState(0);
   const [isSubmittingBooking, setIsSubmittingBooking] = useState(false);
+<<<<<<< HEAD
   // AI Feature #2: smart slot suggestions
   const [smartSlots, setSmartSlots] = useState<Array<{ start_time: string; ai_reason: string }>>([]);
   const timeSlotRef = useRef<HTMLDivElement>(null);
   const detailsRef = useRef<HTMLDivElement>(null);
   const confirmRef = useRef<HTMLDivElement>(null);
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   const calendarOpenedRef = useRef(false);
   const prefilledSlotRef = useRef<string | null>(null);
 
@@ -116,10 +122,13 @@ export const BookAppointment: React.FC = () => {
       try {
         const response = await availabilityService.getSlots(providerId, selectedDate);
         setSlots(response.slots);
+<<<<<<< HEAD
         // AI Feature #2: fetch smart slot recommendations in parallel (non-blocking)
         availabilityService.getSmartSlots(providerId, selectedDate)
           .then((res) => setSmartSlots(res.suggestions || []))
           .catch(() => setSmartSlots([]));
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         const currentPrefilledSlot = prefilledSlotRef.current;
         setSelectedSlot((current) => {
           if (currentPrefilledSlot && response.slots.some((slot) => slot.start_time === currentPrefilledSlot)) {
@@ -140,6 +149,7 @@ export const BookAppointment: React.FC = () => {
     fetchSlots();
   }, [providerId, selectedDate]);
 
+<<<<<<< HEAD
   // Advance step when date is selected — then scroll to time slot picker
   useEffect(() => {
     if (selectedDate && currentStep === 0) {
@@ -153,6 +163,19 @@ export const BookAppointment: React.FC = () => {
     if (selectedSlot && currentStep === 1) {
       setCurrentStep(2);
       setTimeout(() => detailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+=======
+  // Advance step when date is selected
+  useEffect(() => {
+    if (selectedDate && currentStep === 0) {
+      setCurrentStep(1);
+    }
+  }, [selectedDate, currentStep]);
+
+  // Advance step when time slot is selected
+  useEffect(() => {
+    if (selectedSlot && currentStep === 1) {
+      setCurrentStep(2);
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     }
   }, [selectedSlot, currentStep]);
 
@@ -193,7 +216,11 @@ export const BookAppointment: React.FC = () => {
     setIsSubmittingBooking(true);
 
     // Check if Razorpay is available
+<<<<<<< HEAD
     const RazorpayClass = getWindowRazorpay();
+=======
+    const RazorpayClass = (window as any).Razorpay;
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
     const completeBooking = async () => {
       await createAppointment({
@@ -360,7 +387,10 @@ export const BookAppointment: React.FC = () => {
 
   const handleConfirmStep = () => {
     setCurrentStep(3);
+<<<<<<< HEAD
     setTimeout(() => confirmRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   };
 
   const minDate = format(new Date(), 'yyyy-MM-dd');
@@ -559,6 +589,7 @@ export const BookAppointment: React.FC = () => {
               </motion.div>
             </AnimatePresence>
 
+<<<<<<< HEAD
             {/* Bug #35 fix: locked placeholder shown until date is selected */}
             {!selectedDate && (
               <div className="rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 p-6 text-center text-sm text-gray-400 dark:text-gray-500">
@@ -572,6 +603,13 @@ export const BookAppointment: React.FC = () => {
               <motion.div
                 ref={timeSlotRef}
                 initial={{ opacity: 0, y: 8 }}                animate={{ opacity: 1, y: 0 }}
+=======
+            {/* Time slot selection */}
+            {selectedDate && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
                 transition={{ duration: 0.2 }}
               >
                 <Card className="dark:bg-gray-800 dark:border-gray-700">
@@ -580,6 +618,7 @@ export const BookAppointment: React.FC = () => {
                       <Clock className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                       <h3 className="font-semibold text-gray-900 dark:text-gray-100">Select Time</h3>
                     </div>
+<<<<<<< HEAD
                     {/* AI Feature #2: Smart slot recommendation badges */}
                     {smartSlots.length > 0 && (
                       <div className="rounded-lg border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 px-3 py-2">
@@ -607,6 +646,8 @@ export const BookAppointment: React.FC = () => {
                         </div>
                       </div>
                     )}
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
                     <TimeSlotPicker
                       slots={slots}
                       selectedSlot={selectedSlot}
@@ -618,6 +659,7 @@ export const BookAppointment: React.FC = () => {
               </motion.div>
             )}
 
+<<<<<<< HEAD
             {/* Bug #35 fix: locked placeholder for details step */}
             {selectedDate && !selectedSlot && (
               <div className="rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 p-6 text-center text-sm text-gray-400 dark:text-gray-500">
@@ -630,6 +672,11 @@ export const BookAppointment: React.FC = () => {
             {selectedSlot && currentStep >= 2 && (
               <motion.div
                 ref={detailsRef}
+=======
+            {/* Notes */}
+            {selectedSlot && currentStep >= 2 && (
+              <motion.div
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
@@ -646,6 +693,7 @@ export const BookAppointment: React.FC = () => {
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                     />
+<<<<<<< HEAD
                     {loyaltyPoints > 0 && (
                       <Input
                         label={`Redeem loyalty points (available: ${loyaltyPoints})`}
@@ -664,6 +712,21 @@ export const BookAppointment: React.FC = () => {
                         helperText="Each point = ₹1 discount. Applied to your total at checkout."
                       />
                     )}
+=======
+                    <Input
+                      label={`Redeem points (available: ${loyaltyPoints})`}
+                      type="number"
+                      min={0}
+                      max={Math.floor(maxRedeemable)}
+                      value={pointsToRedeem}
+                      onChange={(e) =>
+                        setPointsToRedeem(
+                          Math.max(0, Math.min(Number(e.target.value || 0), Math.floor(maxRedeemable)))
+                        )
+                      }
+                      helperText="Points are applied as rupee discounts while confirming the appointment."
+                    />
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
                     {currentStep === 2 && (
                       <div className="flex justify-end">
                         <Button onClick={handleConfirmStep}>
@@ -679,7 +742,10 @@ export const BookAppointment: React.FC = () => {
             {/* Confirmation step */}
             {currentStep === 3 && (
               <motion.div
+<<<<<<< HEAD
                 ref={confirmRef}
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}

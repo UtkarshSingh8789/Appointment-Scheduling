@@ -1,6 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+<<<<<<< HEAD
 import { ArrowLeft, Calendar, Clock, FileText, Brain } from 'lucide-react';
+=======
+import { ArrowLeft, Calendar, Clock, FileText } from 'lucide-react';
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 import { format } from 'date-fns';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -12,7 +16,10 @@ import { TextArea } from '@/components/ui/TextArea';
 import { Avatar } from '@/components/ui/Avatar';
 import { availabilityService } from '@/services/availabilityService';
 import { appointmentService } from '@/services/appointmentService';
+<<<<<<< HEAD
 import { aiService } from '@/services/aiService';
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 import { useAppointmentStore } from '@/store/appointmentStore';
 import { formatDate, formatTime, getGoogleCalendarUrl } from '@/utils';
 import { getProviderImage } from '@/utils/providerImages';
@@ -31,7 +38,10 @@ export const RescheduleAppointment: React.FC = () => {
   const [notes, setNotes] = useState('');
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
+<<<<<<< HEAD
   const [aiSuggestions, setAiSuggestions] = useState<{ date: string; start_time: string; reason: string; confidence: number }[]>([]);
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
   useEffect(() => {
     const loadAppointment = async () => {
@@ -44,10 +54,13 @@ export const RescheduleAppointment: React.FC = () => {
         setSelectedDate(data.appointment_date);
         setSelectedSlot(data.start_time);
         await fetchAppointment(id);
+<<<<<<< HEAD
         // AI #9: Load reschedule suggestions
         aiService.getRescheduleSuggestions(id).then((d) => {
           if (d?.suggestions?.length) setAiSuggestions(d.suggestions);
         }).catch(() => {});
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
       } catch {
         toast.error('Failed to load appointment');
       } finally {
@@ -70,6 +83,10 @@ export const RescheduleAppointment: React.FC = () => {
         setSlotsLoading(false);
       }
     };
+<<<<<<< HEAD
+=======
+
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     fetchSlots();
   }, [appointment?.provider_id, selectedDate]);
 
@@ -93,7 +110,14 @@ export const RescheduleAppointment: React.FC = () => {
     if (!id || !selectedDate || !selectedSlot) return;
     setIsSaving(true);
     try {
+<<<<<<< HEAD
       await appointmentService.reschedule(id, { appointment_date: selectedDate, start_time: selectedSlot });
+=======
+      await appointmentService.reschedule(id, {
+        appointment_date: selectedDate,
+        start_time: selectedSlot,
+      });
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
       toast.success('Appointment rescheduled successfully');
       navigate(`/appointments/${id}`);
     } catch {
@@ -110,29 +134,67 @@ export const RescheduleAppointment: React.FC = () => {
   return (
     <PageTransition>
       <div className="max-w-4xl mx-auto space-y-6">
+<<<<<<< HEAD
         <Link to={`/appointments/${appointment.id}`} className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
           <ArrowLeft className="w-4 h-4" />Back to appointment
+=======
+        <Link
+          to={`/appointments/${appointment.id}`}
+          className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to appointment
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         </Link>
 
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Reschedule Appointment</h1>
+<<<<<<< HEAD
             <p className="text-gray-500 dark:text-gray-400 mt-1">Pick a new date and time. No additional payment is required for rescheduling.</p>
           </div>
           <a href={calendarUrl} target="_blank" rel="noreferrer"><Button variant="outline">Add to Google Calendar</Button></a>
+=======
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
+              Pick a new date and time. No additional payment is required for rescheduling.
+            </p>
+          </div>
+          <a href={calendarUrl} target="_blank" rel="noreferrer">
+            <Button variant="outline">Add to Google Calendar</Button>
+          </a>
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         </div>
 
         <Card className="dark:bg-gray-800 dark:border-gray-700">
           <div className="flex items-center gap-4">
+<<<<<<< HEAD
             <Avatar name={appointment.provider?.user?.full_name || 'Provider'} src={appointment.provider?.id ? getProviderImage(appointment.provider.id) : undefined} size="lg" />
             <div>
               <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{appointment.provider?.user?.full_name || 'Provider'}</h2>
               <p className="text-sm text-primary-600 dark:text-primary-400">{appointment.provider?.specialization}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400">Current slot: {formatDate(appointment.appointment_date, 'EEE, MMM d, yyyy')} at {formatTime(appointment.start_time)}</p>
+=======
+            <Avatar
+              name={appointment.provider?.user?.full_name || 'Provider'}
+              src={appointment.provider?.id ? getProviderImage(appointment.provider.id) : undefined}
+              size="lg"
+            />
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                {appointment.provider?.user?.full_name || 'Provider'}
+              </h2>
+              <p className="text-sm text-primary-600 dark:text-primary-400">
+                {appointment.provider?.specialization}
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Current slot: {formatDate(appointment.appointment_date, 'EEE, MMM d, yyyy')} at {formatTime(appointment.start_time)}
+              </p>
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
             </div>
           </div>
         </Card>
 
+<<<<<<< HEAD
         {/* AI #9: Smart Reschedule Suggestions */}
         {aiSuggestions.length > 0 && (
           <Card className="dark:bg-gray-800 dark:border-gray-700 border-primary-200 dark:border-primary-800">
@@ -159,14 +221,33 @@ export const RescheduleAppointment: React.FC = () => {
           </Card>
         )}
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="dark:bg-gray-800 dark:border-gray-700 space-y-4">
             <div className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-primary-600 dark:text-primary-400" />
               <h3 className="font-semibold text-gray-900 dark:text-gray-100">Choose a new date</h3>
             </div>
+<<<<<<< HEAD
             <DatePicker value={selectedDate} onChange={(e) => { setSelectedDate(e.target.value); setSelectedSlot(null); }} min={format(new Date(), 'yyyy-MM-dd')} />
             <TextArea label="Reschedule Notes" placeholder="Optional note for the provider" value={notes} onChange={(e) => setNotes(e.target.value)} />
+=======
+            <DatePicker
+              value={selectedDate}
+              onChange={(e) => {
+                setSelectedDate(e.target.value);
+                setSelectedSlot(null);
+              }}
+              min={format(new Date(), 'yyyy-MM-dd')}
+            />
+            <TextArea
+              label="Reschedule Notes"
+              placeholder="Optional note for the provider"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
           </Card>
 
           <Card className="dark:bg-gray-800 dark:border-gray-700 space-y-4">
@@ -174,7 +255,16 @@ export const RescheduleAppointment: React.FC = () => {
               <Clock className="w-5 h-5 text-primary-600 dark:text-primary-400" />
               <h3 className="font-semibold text-gray-900 dark:text-gray-100">Choose a new time</h3>
             </div>
+<<<<<<< HEAD
             <TimeSlotPicker slots={slots} selectedSlot={selectedSlot} onSelect={setSelectedSlot} isLoading={slotsLoading} />
+=======
+            <TimeSlotPicker
+              slots={slots}
+              selectedSlot={selectedSlot}
+              onSelect={setSelectedSlot}
+              isLoading={slotsLoading}
+            />
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
           </Card>
         </div>
 
@@ -186,6 +276,7 @@ export const RescheduleAppointment: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-gray-500 dark:text-gray-400">New date</p>
+<<<<<<< HEAD
               <p className="font-medium text-gray-900 dark:text-gray-100">{selectedDate ? formatDate(selectedDate, 'EEEE, MMMM d, yyyy') : 'Select a date'}</p>
             </div>
             <div>
@@ -196,6 +287,26 @@ export const RescheduleAppointment: React.FC = () => {
           <div className="flex justify-end gap-3">
             <Button variant="secondary" onClick={() => navigate(`/appointments/${appointment.id}`)}>Cancel</Button>
             <Button onClick={handleSubmit} isLoading={isSaving} disabled={!selectedDate || !selectedSlot}>Confirm Reschedule</Button>
+=======
+              <p className="font-medium text-gray-900 dark:text-gray-100">
+                {selectedDate ? formatDate(selectedDate, 'EEEE, MMMM d, yyyy') : 'Select a date'}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-500 dark:text-gray-400">New time</p>
+              <p className="font-medium text-gray-900 dark:text-gray-100">
+                {selectedSlot ? formatTime(selectedSlot) : 'Select a time'}
+              </p>
+            </div>
+          </div>
+          <div className="flex justify-end gap-3">
+            <Button variant="secondary" onClick={() => navigate(`/appointments/${appointment.id}`)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSubmit} isLoading={isSaving} disabled={!selectedDate || !selectedSlot}>
+              Confirm Reschedule
+            </Button>
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
           </div>
         </Card>
       </div>

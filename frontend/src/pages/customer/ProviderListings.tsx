@@ -1,11 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+<<<<<<< HEAD
 import { MapPin, Star, Briefcase, LayoutGrid, List, Clock, Brain, Search } from 'lucide-react';
+=======
+import { MapPin, Star, Briefcase, LayoutGrid, List, Clock } from 'lucide-react';
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 import { motion } from 'framer-motion';
 import { useProviderStore } from '@/store/providerStore';
 import { getProviderImage } from '@/utils/providerImages';
 import { useCategories } from '@/hooks/useCategories';
+<<<<<<< HEAD
 import { aiService } from '@/services/aiService';
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 import { AdvancedSearch } from '@/components/search/AdvancedSearch';
 import { Card } from '@/components/ui/Card';
 import { Avatar } from '@/components/ui/Avatar';
@@ -33,13 +40,17 @@ export const ProviderListings: React.FC = () => {
   const { categories } = useCategories();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [minRating, setMinRating] = useState(0);
+<<<<<<< HEAD
   const [nlpQuery, setNlpQuery] = useState('');
   const [nlpResults, setNlpResults] = useState<{ id: string; name: string; category: string; specialization: string; location: string; rating: number; hourly_rate: number }[] | null>(null);
   const [nlpLoading, setNlpLoading] = useState(false);
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const categoryScrollRef = useRef<HTMLDivElement | null>(null);
   const isInitialMount = useRef(true);
 
+<<<<<<< HEAD
   const handleNlpSearch = async () => {
     if (!nlpQuery.trim()) { setNlpResults(null); return; }
     setNlpLoading(true);
@@ -49,6 +60,8 @@ export const ProviderListings: React.FC = () => {
     } catch { setNlpResults([]); } finally { setNlpLoading(false); }
   };
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   // Initial fetch on mount
   useEffect(() => {
     fetchProviders({
@@ -159,6 +172,7 @@ export const ProviderListings: React.FC = () => {
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* AI #22: Smart NLP Search */}
         <div className="flex gap-2">
           <div className="flex-1 relative">
@@ -218,6 +232,8 @@ export const ProviderListings: React.FC = () => {
           </div>
         )}
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         {/* Search + Inline Filters — Full Width */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           {/* Search bar — takes 2 columns on large screens */}

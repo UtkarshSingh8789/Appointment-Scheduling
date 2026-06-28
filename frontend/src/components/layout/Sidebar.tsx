@@ -20,8 +20,11 @@ import {
   CalendarPlus,
   BarChart3,
   ShieldCheck,
+<<<<<<< HEAD
   Link as LinkIcon,
   Sparkles,
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { Logo } from '@/components/ui/Logo';
@@ -43,7 +46,10 @@ const customerSections: NavSection[] = [
     heading: 'Overview',
     items: [
       { label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
+<<<<<<< HEAD
       { label: 'Cal.com Hub', path: '/calcom', icon: <Sparkles className="w-5 h-5" /> },
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     ],
   },
   {
@@ -76,7 +82,10 @@ const providerSections: NavSection[] = [
     heading: 'Overview',
     items: [
       { label: 'Dashboard', path: '/provider/dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
+<<<<<<< HEAD
       { label: 'Cal.com Hub', path: '/calcom', icon: <Sparkles className="w-5 h-5" /> },
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     ],
   },
   {
@@ -91,7 +100,10 @@ const providerSections: NavSection[] = [
     heading: 'Business',
     items: [
       { label: 'Invoices', path: '/invoices', icon: <FileText className="w-5 h-5" /> },
+<<<<<<< HEAD
       { label: 'Integrations', path: '/provider/integrations', icon: <LinkIcon className="w-5 h-5" /> },
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     ],
   },
   {
@@ -108,7 +120,10 @@ const adminSections: NavSection[] = [
     heading: 'Overview',
     items: [
       { label: 'Dashboard', path: '/admin/dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
+<<<<<<< HEAD
       { label: 'Cal.com Hub', path: '/calcom', icon: <Sparkles className="w-5 h-5" /> },
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
     ],
   },
   {

@@ -14,6 +14,7 @@ import { debounce, formatCurrency } from '@/utils';
 import { getProviderImage } from '@/utils/providerImages';
 import type { Provider } from '@/types';
 
+<<<<<<< HEAD
 interface PlatformSuggestion {
   label: string;
   url: string;
@@ -35,6 +36,8 @@ function getPlatformSuggestions(query: string): PlatformSuggestion[] {
     .map(({ label, url }) => ({ label, url }));
 }
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 interface AdvancedSearchProps {
   onSearch?: (query: string) => void;
   className?: string;
@@ -82,7 +85,10 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
   const [query, setQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const [suggestions, setSuggestions] = useState<Provider[]>([]);
+<<<<<<< HEAD
   const [platformSuggestions, setPlatformSuggestions] = useState<PlatformSuggestion[]>([]);
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>(getRecentSearches());
 
@@ -98,10 +104,15 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
     debounce(async (searchQuery: string) => {
       if (searchQuery.length < 2) {
         setSuggestions([]);
+<<<<<<< HEAD
         setPlatformSuggestions([]);
         return;
       }
       setPlatformSuggestions(getPlatformSuggestions(searchQuery));
+=======
+        return;
+      }
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
       setIsLoadingSuggestions(true);
       try {
         const response = await providerService.getProviders({
@@ -268,6 +279,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
               </div>
             )}
 
+<<<<<<< HEAD
             {/* Platform Suggestions */}
             {!isLoadingSuggestions && platformSuggestions.length > 0 && (
               <div className="p-2 border-b border-gray-100 dark:border-gray-700">
@@ -293,6 +305,8 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
               </div>
             )}
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
             {/* Suggestions */}
             {!isLoadingSuggestions && suggestions.length > 0 && (
               <div className="p-2">
@@ -336,7 +350,11 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             )}
 
             {/* No results */}
+<<<<<<< HEAD
             {!isLoadingSuggestions && query.length >= 2 && suggestions.length === 0 && platformSuggestions.length === 0 && (
+=======
+            {!isLoadingSuggestions && query.length >= 2 && suggestions.length === 0 && (
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
               <div className="p-6 text-center">
                 <TrendingUp className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">

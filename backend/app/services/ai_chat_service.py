@@ -2,9 +2,15 @@
 
 from __future__ import annotations
 
+<<<<<<< HEAD
 import hashlib
 import re
 from dataclasses import dataclass
+=======
+import re
+from dataclasses import dataclass
+from functools import lru_cache
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 from pathlib import Path
 
 from sqlalchemy import select
@@ -15,6 +21,7 @@ from app.models.provider import ServiceProvider
 from app.models.user import UserRole
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+<<<<<<< HEAD
 # Only include files that actually exist.
 KNOWLEDGE_FILES = (
     REPO_ROOT / "README.md",
@@ -26,6 +33,13 @@ KNOWLEDGE_FILES = (
 # Bug #13/#33 fix: file-hash-based cache — refreshes when README changes on disk.
 _KNOWLEDGE_CACHE: dict[tuple, tuple["KnowledgeChunk", ...]] = {}
 
+=======
+KNOWLEDGE_FILES = (
+    REPO_ROOT / "PROJECT-PRESENTATION-DOC.md",
+    REPO_ROOT / "README.md",
+)
+
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 STOPWORDS = {
     "a",
     "about",
@@ -97,6 +111,7 @@ class AIChatRetrievalService:
 
     @staticmethod
     def is_booking_intent(message: str) -> bool:
+<<<<<<< HEAD
         """Detect booking-related queries — expanded to catch natural phrasing variants."""
         q = message.lower()
         return any(
@@ -111,6 +126,13 @@ class AIChatRetrievalService:
                 "can i book", "can you book", "how do i book",
                 "find me a", "book me a", "schedule me",
             )
+=======
+        """Detect booking-related queries."""
+        q = message.lower()
+        return any(
+            token in q
+            for token in ("book", "booking", "schedule", "reserve", "appointment with")
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         )
 
     @staticmethod
@@ -609,6 +631,7 @@ class AIChatRetrievalService:
         return "I found these matching providers: " + "; ".join(parts) + "."
 
     @classmethod
+<<<<<<< HEAD
     def _load_knowledge_chunks(cls) -> tuple["KnowledgeChunk", ...]:
         """Load searchable project knowledge, refreshing if source files have changed."""
         # Build a cache key from the sha256 of each file's content
@@ -628,16 +651,42 @@ class AIChatRetrievalService:
                 continue
             content = file_path.read_text(encoding="utf-8")
             sections = cls._split_markdown_sections(content)
+=======
+    @lru_cache(maxsize=1)
+    def _load_knowledge_chunks(cls) -> tuple[KnowledgeChunk, ...]:
+        """Load searchable project knowledge once per process."""
+        chunks: list[KnowledgeChunk] = []
+
+        for file_path in KNOWLEDGE_FILES:
+            if not file_path.exists():
+                continue
+
+            content = file_path.read_text(encoding="utf-8")
+            sections = cls._split_markdown_sections(content)
+
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
             for title, body in sections:
                 for fragment in cls._chunk_section_body(body):
                     cleaned = fragment.strip()
                     if cleaned:
+<<<<<<< HEAD
                         chunks.append(KnowledgeChunk(source=file_path.name, title=title, body=cleaned))
 
         result = tuple(chunks)
         _KNOWLEDGE_CACHE.clear()  # Only keep the most recent version
         _KNOWLEDGE_CACHE[cache_key] = result
         return result
+=======
+                        chunks.append(
+                            KnowledgeChunk(
+                                source=file_path.name,
+                                title=title,
+                                body=cleaned,
+                            )
+                        )
+
+        return tuple(chunks)
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
     @staticmethod
     def _split_markdown_sections(content: str) -> list[tuple[str, str]]:

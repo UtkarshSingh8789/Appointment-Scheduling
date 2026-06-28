@@ -1,11 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+<<<<<<< HEAD
 import { Calendar, Clock, CheckCircle, Users, TrendingUp, Plus, Star, Brain } from 'lucide-react';
+=======
+import { Calendar, Clock, CheckCircle, Users, TrendingUp, Plus, Star } from 'lucide-react';
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/store/authStore';
 import { appointmentService } from '@/services/appointmentService';
 import { providerService } from '@/services/providerService';
+<<<<<<< HEAD
 import { aiService } from '@/services/aiService';
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 import { StatsCard } from '@/components/ui/StatsCard';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -56,7 +63,10 @@ export const CustomerDashboard: React.FC = () => {
   const [recommendedProviders, setRecommendedProviders] = useState<Provider[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<CustomerStats | null>(null);
+<<<<<<< HEAD
   const [nextBooking, setNextBooking] = useState<{ prediction: { category: string; reason: string; suggested_providers: Provider[] } | null } | null>(null);
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,6 +86,7 @@ export const CustomerDashboard: React.FC = () => {
       }
     };
     fetchData();
+<<<<<<< HEAD
 
     // AI #12: Booking intent predictor (lazy)
     aiService.getNextBookingPrediction().then((data) => setNextBooking(data)).catch(() => {});
@@ -84,6 +95,8 @@ export const CustomerDashboard: React.FC = () => {
     aiService.getPersonalisedRecommendations().then((data) => {
       if (data?.recommendations?.length) setRecommendedProviders(data.recommendations.slice(0, 3));
     }).catch(() => {});
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
   }, []);
 
   const nextAppointment = upcoming[0];
@@ -273,6 +286,7 @@ export const CustomerDashboard: React.FC = () => {
           )}
         </Card>
 
+<<<<<<< HEAD
         {/* AI #12: Booking Intent Prediction */}
         {nextBooking?.prediction && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
@@ -300,14 +314,20 @@ export const CustomerDashboard: React.FC = () => {
           </motion.div>
         )}
 
+=======
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
         {/* Recommended Providers */}
         {recommendedProviders.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-4">
+<<<<<<< HEAD
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recommended for You</h2>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 uppercase tracking-wide">AI</span>
               </div>
+=======
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recommended Providers</h2>
+>>>>>>> f959a005532182b2a1b07dffc4ec81caecc28202
               <Link to="/providers" className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 font-medium">
                 View all
               </Link>
