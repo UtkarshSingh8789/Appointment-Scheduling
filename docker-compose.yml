@@ -15,6 +15,26 @@ services:
     networks:
       - app-network
     restart: unless-stopped
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: appointment_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: appointment_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d appointment_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+    restart: unless-stopped
 
   # FastAPI Backend
   backend:
@@ -59,8 +79,10 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+      db:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -89,6 +111,9 @@ services:
     volumes:
       - backend_data:/app/data
       - backend_uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
     networks:
       - app-network
     restart: unless-stopped
@@ -124,6 +149,7 @@ services:
 
 volumes:
   redis_data:
+  postgres_data:
   backend_data:
   backend_uploads:
 

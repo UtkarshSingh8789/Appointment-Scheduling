@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.core.database import create_tables
+from app.core.security import hash_password
 from app.middleware.error_handler import ErrorHandlerMiddleware
 from app.middleware.rate_limiter import RateLimitMiddleware
 from app.routers import (
@@ -36,6 +37,9 @@ from app.routers import (
     premium,
     integrations,
 )
+from sqlalchemy import select
+from app.core.database import async_session_maker
+from app.models.user import User, UserRole
 
 # Configure logging
 logging.basicConfig(
@@ -114,7 +118,63 @@ async def _startup():
     from app.core.redis import get_redis
     await get_redis()
     logger.info("Database tables created/verified.")
+    await _ensure_demo_auth_users()
     await _run_demo_seed()
+
+
+async def _ensure_demo_auth_users():
+    """Keep the documented demo credentials working across reused local volumes."""
+    demo_users = [
+        {
+            "email": "admin@appointly.com",
+            "full_name": "Admin User",
+            "password": "Admin@2024",
+            "role": UserRole.ADMIN,
+            "is_super_admin": True,
+        },
+        {
+            "email": "priya.sharma@email.com",
+            "full_name": "Priya Sharma",
+            "password": "Demo@1234",
+            "role": UserRole.CUSTOMER,
+        },
+        {
+            "email": "dr.arun.kapoor@email.com",
+            "full_name": "Dr. Arun Kapoor",
+            "password": "Demo@1234",
+            "role": UserRole.PROVIDER,
+        },
+    ]
+
+    async with async_session_maker() as db:
+        changed = False
+        for demo in demo_users:
+            result = await db.execute(select(User).where(User.email == demo["email"]))
+            user = result.scalar_one_or_none()
+            if user is None:
+                db.add(
+                    User(
+                        email=demo["email"],
+                        full_name=demo["full_name"],
+                        password_hash=hash_password(demo["password"]),
+                        role=demo["role"],
+                        is_active=True,
+                        is_super_admin=demo.get("is_super_admin", False),
+                    )
+                )
+                changed = True
+                continue
+
+            user.full_name = demo["full_name"]
+            user.password_hash = hash_password(demo["password"])
+            user.role = demo["role"]
+            user.is_active = True
+            if demo.get("is_super_admin", False):
+                user.is_super_admin = True
+            changed = True
+
+        if changed:
+            await db.commit()
 
 
 async def _run_demo_seed():

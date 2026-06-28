@@ -210,6 +210,13 @@ docker-compose up --build
 # Database shell
 docker exec -it appointment_db psql -U postgres -d appointment_db
 
+# DBeaver connection
+# Host: 127.0.0.1
+# Port: 5433
+# Database: appointment_db
+# Username: postgres
+# Password: postgrespassword
+
 # Redis CLI
 docker exec -it appointment_redis redis-cli
 ```

@@ -56,6 +56,7 @@ async def create_tables():
     async with engine.begin() as conn:
         await _ensure_appointment_financial_columns(conn)
         await _ensure_super_admin_column(conn)
+        await _ensure_premium_column(conn)
 
 
 async def _ensure_pgvector_extension(conn) -> None:
@@ -125,3 +126,14 @@ async def _ensure_super_admin_column(conn) -> None:
     await conn.exec_driver_sql(
         "UPDATE users SET is_super_admin = TRUE WHERE email = 'admin@appointly.com'"
     )
+
+
+async def _ensure_premium_column(conn) -> None:
+    """Add premium flag for existing databases."""
+    if conn.dialect.name != "postgresql":
+        return
+
+    await conn.exec_driver_sql(
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_premium BOOLEAN NOT NULL DEFAULT FALSE"
+    )
+
